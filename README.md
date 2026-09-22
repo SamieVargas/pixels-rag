@@ -302,6 +302,21 @@ score, which filters matched, whether it sat in the date range and whether
 the answer cited it, with the route, the resolved plan and the validator's
 outcome, so any answer can be audited in ten seconds.
 
-### What v2 does not do yet
+### A local MCP server
 
-Part 12 of the plan, the local MCP server, lands on its own PR.
+`mcp_server.py` exposes two read-only tools over stdio, `ask_pixels(question)`
+and `list_days(start, end)`, through the same router, validator and model
+call the CLI uses. Claude Desktop or Claude Code can ask the data questions
+while the data stays on the machine; a question sends its evidence to the
+model provider exactly as the CLI does, and `list_days` sends nothing
+anywhere. There are no write tools. Add it to Claude Desktop with:
+
+```json
+{"mcpServers": {"pixels": {"command": "python", "args": ["/path/to/pixels-rag/mcp_server.py"],
+                           "env": {"PIXELS_DB": "/path/to/pixels-rag/chroma_db", "ANTHROPIC_API_KEY": "..."}}}}
+```
+
+### Not in v2
+
+A web UI, feeding answers into the Life OS dashboard, sources beyond Life in
+Pixels, and any cloud deployment.
