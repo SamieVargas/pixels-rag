@@ -158,7 +158,7 @@ Offline, with the default local embedder (all-MiniLM-L6-v2), 2026-09-22:
 | --- | --- |
 | Semantic recall@3 / @5 / @10 | 63% / 89% / 93% · MRR 0.71 |
 | Filter: matched set equals the expected set | 100% of 7 |
-| Route accuracy, facts in the answer, citation validity, abstention | pending a keyed run |
+| Route accuracy, facts in the answer, citation validity, abstention | keyed run below |
 
 Three semantic questions carry the misses. S03 asks what recovery looked like
 the day after the trail run: the run day is found and the morning after is
@@ -167,19 +167,46 @@ S04 finds the severe-anxiety day at rank five. S06 asks about a whole week
 and five of its seven days make the top five, which is the case the chunking
 ablation was built for.
 
-Chunk granularity, offline, one run per arm (retrieval is deterministic
-without a key, so one run is the whole story; the twenty-run arms measure
-the answer's fact coverage and need a key):
+Keyed, Haiku 4.5 under the native contract, the router deciding, 2026-09-22:
+
+| Measure | Result |
+| --- | --- |
+| Route accuracy (router kind equals golden kind) | 100% of 26 |
+| Citations valid | 100%, 0 hard fails |
+| Abstained on unanswerable / on answerable | 5 of 5 / 2 of 21 |
+| Expected facts in the answer | 85% |
+| Filter: matched set equals the expected set | 100% of 7 |
+| Semantic recall@3 / @5 / @10 | 70% / 74% / 79% · MRR 0.86 |
+| Validator retries · parse path | 10 across 26 · native on all 20 answers |
+| Mean tokens in / out · mean latency | 4,107 / 418 · 4.0 s |
+
+The router chose the right kind every time, the seven aggregate questions
+all quoted their table, and every date in every answer was one the pipeline
+had retrieved. Semantic recall is lower keyed than offline because the
+router's own rewritten query and date phrase drive retrieval instead of the
+golden plan, and two questions carry the whole gap. S07 asks about the
+Hashimoto's flare days; the router added a filter that matched no day, so
+the pipeline abstained rather than search, which is the two-of-21 row. S03
+is the adjacency case again: the router folded "the day after a trail run"
+into the date phrase, which does not resolve, and the answer said the
+following day was not in the evidence rather than invent it. Filter recall@k
+is capped by set size, since a filter matching fifteen days cannot score
+above a third at k=5, so the exact-match column is the one that counts.
+
+Chunk granularity, keyed, twenty runs per arm on the seven semantic
+questions, 2026-09-22 (the offline single run, which is deterministic,
+gives the same recall):
 
 | Measure | A · day chunks | B · day + week rollups |
 | --- | --- | --- |
 | Recall@5 | 89% | 93% |
+| Expected facts in the answer | 82% | 83% |
 | S06, the week question | 71% | 100% |
-| Week chunks retrieved | 0 | 14 |
+| Week chunks retrieved, 140 runs | 0 | 280 |
 
-The rollup lifts the week question and changes nothing else. That is a
-narrower claim than "chunk design is the lever", and it is the one the data
-supports so far.
+The rollup lifts the week question and changes nothing else, and the one
+point of fact coverage between the arms is a tie. That is a narrower claim
+than "chunk design is the lever", and it is the one the data supports.
 
 ### Running v2
 
@@ -291,8 +318,20 @@ days?", "only in June?") into a standalone question, which is the
 spec are filled as if the full question had been asked. The two follow-up
 questions in the golden set score this: `python evals/run.py --followups`
 asks each one with its prior turn in history and alone, and reports whether
-the route and the plan equal the golden plan under each arm. That table needs
-a key, since the rewriting is the router's, and reads pending until then.
+the route and the plan equal the golden plan under each arm. Keyed,
+2026-09-22:
+
+| Q | Arm | Route | Plan equals golden | Rewritten as |
+| --- | --- | --- | --- | --- |
+| H01 "And on hot yoga days?" | with history | aggregate | yes | What was my average rating on hot yoga days? |
+| H01 | alone | filter | no | What were the hot yoga days like? |
+| H02 "Only in June?" | with history | filter | yes | Which days in June was my sleep score under 60? |
+| H02 | alone | unanswerable | no | |
+
+With the prior turn, both follow-ups come back as the full question and the
+plan matches the golden one. Alone, the first turns into a different
+question and the second has nothing to stand on, which is the case the
+history exists for.
 
 ### What leaves the machine
 
