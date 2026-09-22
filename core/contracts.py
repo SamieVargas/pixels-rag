@@ -62,6 +62,14 @@ def field_lines():
     return "\n".join(f"- {name} ({typ}): {desc}" for name, (typ, desc) in FIELDS.items())
 
 
+def nullable_enum(values):
+    """A closed set or null. The API's schema validator refuses an enum on a
+    field whose type is a list (it reported: enum value 'rating' does not match
+    declared type ['string', 'null']), so the two cases are spelled out as
+    anyOf, which structured outputs support."""
+    return {"anyOf": [{"type": "string", "enum": list(values)}, {"type": "null"}]}
+
+
 def router_schema():
     nullable_str = {"type": ["string", "null"]}
     return {
@@ -91,8 +99,8 @@ def router_schema():
             "aggregate": {
                 "type": "object",
                 "properties": {
-                    "metric": {"type": ["string", "null"], "enum": list(NUMERIC_FIELDS) + [None]},
-                    "stat": {"type": ["string", "null"], "enum": list(STATS) + [None]},
+                    "metric": nullable_enum(NUMERIC_FIELDS),
+                    "stat": nullable_enum(STATS),
                     "group_by": nullable_str,
                 },
                 "required": ["metric", "stat", "group_by"],
