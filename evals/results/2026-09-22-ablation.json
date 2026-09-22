@@ -1,0 +1,1987 @@
+{
+ "generated": "2026-09-22T15:48:09+00:00",
+ "runs": 20,
+ "offline": false,
+ "embedding": "default",
+ "planned": 280,
+ "completed": 280,
+ "partial": false,
+ "arms": {
+  "A": {
+   "level": "day",
+   "rows": [
+    {
+     "id": "S01",
+     "run": 1,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S02",
+     "run": 1,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S03",
+     "run": 1,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 0
+    },
+    {
+     "id": "S04",
+     "run": 1,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S05",
+     "run": 1,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S06",
+     "run": 1,
+     "recall5": 0.7143,
+     "facts": null,
+     "weeks": 0
+    },
+    {
+     "id": "S07",
+     "run": 1,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S01",
+     "run": 2,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S02",
+     "run": 2,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S03",
+     "run": 2,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 0
+    },
+    {
+     "id": "S04",
+     "run": 2,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S05",
+     "run": 2,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S06",
+     "run": 2,
+     "recall5": 0.7143,
+     "facts": null,
+     "weeks": 0
+    },
+    {
+     "id": "S07",
+     "run": 2,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S01",
+     "run": 3,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S02",
+     "run": 3,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S03",
+     "run": 3,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 0
+    },
+    {
+     "id": "S04",
+     "run": 3,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S05",
+     "run": 3,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S06",
+     "run": 3,
+     "recall5": 0.7143,
+     "facts": null,
+     "weeks": 0
+    },
+    {
+     "id": "S07",
+     "run": 3,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S01",
+     "run": 4,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S02",
+     "run": 4,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S03",
+     "run": 4,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 0
+    },
+    {
+     "id": "S04",
+     "run": 4,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S05",
+     "run": 4,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S06",
+     "run": 4,
+     "recall5": 0.7143,
+     "facts": null,
+     "weeks": 0
+    },
+    {
+     "id": "S07",
+     "run": 4,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S01",
+     "run": 5,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S02",
+     "run": 5,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S03",
+     "run": 5,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 0
+    },
+    {
+     "id": "S04",
+     "run": 5,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S05",
+     "run": 5,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S06",
+     "run": 5,
+     "recall5": 0.7143,
+     "facts": null,
+     "weeks": 0
+    },
+    {
+     "id": "S07",
+     "run": 5,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S01",
+     "run": 6,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S02",
+     "run": 6,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S03",
+     "run": 6,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 0
+    },
+    {
+     "id": "S04",
+     "run": 6,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S05",
+     "run": 6,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S06",
+     "run": 6,
+     "recall5": 0.7143,
+     "facts": null,
+     "weeks": 0
+    },
+    {
+     "id": "S07",
+     "run": 6,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S01",
+     "run": 7,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S02",
+     "run": 7,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S03",
+     "run": 7,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 0
+    },
+    {
+     "id": "S04",
+     "run": 7,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S05",
+     "run": 7,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S06",
+     "run": 7,
+     "recall5": 0.7143,
+     "facts": null,
+     "weeks": 0
+    },
+    {
+     "id": "S07",
+     "run": 7,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S01",
+     "run": 8,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S02",
+     "run": 8,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S03",
+     "run": 8,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 0
+    },
+    {
+     "id": "S04",
+     "run": 8,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S05",
+     "run": 8,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S06",
+     "run": 8,
+     "recall5": 0.7143,
+     "facts": null,
+     "weeks": 0
+    },
+    {
+     "id": "S07",
+     "run": 8,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S01",
+     "run": 9,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S02",
+     "run": 9,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S03",
+     "run": 9,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 0
+    },
+    {
+     "id": "S04",
+     "run": 9,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S05",
+     "run": 9,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S06",
+     "run": 9,
+     "recall5": 0.7143,
+     "facts": null,
+     "weeks": 0
+    },
+    {
+     "id": "S07",
+     "run": 9,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S01",
+     "run": 10,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S02",
+     "run": 10,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S03",
+     "run": 10,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 0
+    },
+    {
+     "id": "S04",
+     "run": 10,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S05",
+     "run": 10,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S06",
+     "run": 10,
+     "recall5": 0.7143,
+     "facts": null,
+     "weeks": 0
+    },
+    {
+     "id": "S07",
+     "run": 10,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S01",
+     "run": 11,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S02",
+     "run": 11,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S03",
+     "run": 11,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 0
+    },
+    {
+     "id": "S04",
+     "run": 11,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S05",
+     "run": 11,
+     "recall5": 1.0,
+     "facts": 0.0,
+     "weeks": 0
+    },
+    {
+     "id": "S06",
+     "run": 11,
+     "recall5": 0.7143,
+     "facts": null,
+     "weeks": 0
+    },
+    {
+     "id": "S07",
+     "run": 11,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S01",
+     "run": 12,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S02",
+     "run": 12,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S03",
+     "run": 12,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 0
+    },
+    {
+     "id": "S04",
+     "run": 12,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S05",
+     "run": 12,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S06",
+     "run": 12,
+     "recall5": 0.7143,
+     "facts": null,
+     "weeks": 0
+    },
+    {
+     "id": "S07",
+     "run": 12,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S01",
+     "run": 13,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S02",
+     "run": 13,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S03",
+     "run": 13,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 0
+    },
+    {
+     "id": "S04",
+     "run": 13,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S05",
+     "run": 13,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S06",
+     "run": 13,
+     "recall5": 0.7143,
+     "facts": null,
+     "weeks": 0
+    },
+    {
+     "id": "S07",
+     "run": 13,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S01",
+     "run": 14,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S02",
+     "run": 14,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S03",
+     "run": 14,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 0
+    },
+    {
+     "id": "S04",
+     "run": 14,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S05",
+     "run": 14,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S06",
+     "run": 14,
+     "recall5": 0.7143,
+     "facts": null,
+     "weeks": 0
+    },
+    {
+     "id": "S07",
+     "run": 14,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S01",
+     "run": 15,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S02",
+     "run": 15,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S03",
+     "run": 15,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 0
+    },
+    {
+     "id": "S04",
+     "run": 15,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S05",
+     "run": 15,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S06",
+     "run": 15,
+     "recall5": 0.7143,
+     "facts": null,
+     "weeks": 0
+    },
+    {
+     "id": "S07",
+     "run": 15,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S01",
+     "run": 16,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S02",
+     "run": 16,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S03",
+     "run": 16,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 0
+    },
+    {
+     "id": "S04",
+     "run": 16,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S05",
+     "run": 16,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S06",
+     "run": 16,
+     "recall5": 0.7143,
+     "facts": null,
+     "weeks": 0
+    },
+    {
+     "id": "S07",
+     "run": 16,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S01",
+     "run": 17,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S02",
+     "run": 17,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S03",
+     "run": 17,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 0
+    },
+    {
+     "id": "S04",
+     "run": 17,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S05",
+     "run": 17,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S06",
+     "run": 17,
+     "recall5": 0.7143,
+     "facts": null,
+     "weeks": 0
+    },
+    {
+     "id": "S07",
+     "run": 17,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S01",
+     "run": 18,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S02",
+     "run": 18,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S03",
+     "run": 18,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 0
+    },
+    {
+     "id": "S04",
+     "run": 18,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S05",
+     "run": 18,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S06",
+     "run": 18,
+     "recall5": 0.7143,
+     "facts": null,
+     "weeks": 0
+    },
+    {
+     "id": "S07",
+     "run": 18,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S01",
+     "run": 19,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S02",
+     "run": 19,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S03",
+     "run": 19,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 0
+    },
+    {
+     "id": "S04",
+     "run": 19,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S05",
+     "run": 19,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S06",
+     "run": 19,
+     "recall5": 0.7143,
+     "facts": null,
+     "weeks": 0
+    },
+    {
+     "id": "S07",
+     "run": 19,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S01",
+     "run": 20,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S02",
+     "run": 20,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S03",
+     "run": 20,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 0
+    },
+    {
+     "id": "S04",
+     "run": 20,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S05",
+     "run": 20,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    },
+    {
+     "id": "S06",
+     "run": 20,
+     "recall5": 0.7143,
+     "facts": null,
+     "weeks": 0
+    },
+    {
+     "id": "S07",
+     "run": 20,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 0
+    }
+   ],
+   "recall5": 0.8878,
+   "facts": 0.825,
+   "week_chunks_retrieved": 0
+  },
+  "B": {
+   "level": "day+week",
+   "rows": [
+    {
+     "id": "S01",
+     "run": 1,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S02",
+     "run": 1,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S03",
+     "run": 1,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 2
+    },
+    {
+     "id": "S04",
+     "run": 1,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S05",
+     "run": 1,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S06",
+     "run": 1,
+     "recall5": 1.0,
+     "facts": null,
+     "weeks": 1
+    },
+    {
+     "id": "S07",
+     "run": 1,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 5
+    },
+    {
+     "id": "S01",
+     "run": 2,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S02",
+     "run": 2,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S03",
+     "run": 2,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 2
+    },
+    {
+     "id": "S04",
+     "run": 2,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S05",
+     "run": 2,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S06",
+     "run": 2,
+     "recall5": 1.0,
+     "facts": null,
+     "weeks": 1
+    },
+    {
+     "id": "S07",
+     "run": 2,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 5
+    },
+    {
+     "id": "S01",
+     "run": 3,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S02",
+     "run": 3,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S03",
+     "run": 3,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 2
+    },
+    {
+     "id": "S04",
+     "run": 3,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S05",
+     "run": 3,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S06",
+     "run": 3,
+     "recall5": 1.0,
+     "facts": null,
+     "weeks": 1
+    },
+    {
+     "id": "S07",
+     "run": 3,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 5
+    },
+    {
+     "id": "S01",
+     "run": 4,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S02",
+     "run": 4,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S03",
+     "run": 4,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 2
+    },
+    {
+     "id": "S04",
+     "run": 4,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S05",
+     "run": 4,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S06",
+     "run": 4,
+     "recall5": 1.0,
+     "facts": null,
+     "weeks": 1
+    },
+    {
+     "id": "S07",
+     "run": 4,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 5
+    },
+    {
+     "id": "S01",
+     "run": 5,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S02",
+     "run": 5,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S03",
+     "run": 5,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 2
+    },
+    {
+     "id": "S04",
+     "run": 5,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S05",
+     "run": 5,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S06",
+     "run": 5,
+     "recall5": 1.0,
+     "facts": null,
+     "weeks": 1
+    },
+    {
+     "id": "S07",
+     "run": 5,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 5
+    },
+    {
+     "id": "S01",
+     "run": 6,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S02",
+     "run": 6,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S03",
+     "run": 6,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 2
+    },
+    {
+     "id": "S04",
+     "run": 6,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S05",
+     "run": 6,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S06",
+     "run": 6,
+     "recall5": 1.0,
+     "facts": null,
+     "weeks": 1
+    },
+    {
+     "id": "S07",
+     "run": 6,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 5
+    },
+    {
+     "id": "S01",
+     "run": 7,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S02",
+     "run": 7,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S03",
+     "run": 7,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 2
+    },
+    {
+     "id": "S04",
+     "run": 7,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S05",
+     "run": 7,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S06",
+     "run": 7,
+     "recall5": 1.0,
+     "facts": null,
+     "weeks": 1
+    },
+    {
+     "id": "S07",
+     "run": 7,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 5
+    },
+    {
+     "id": "S01",
+     "run": 8,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S02",
+     "run": 8,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S03",
+     "run": 8,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 2
+    },
+    {
+     "id": "S04",
+     "run": 8,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S05",
+     "run": 8,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S06",
+     "run": 8,
+     "recall5": 1.0,
+     "facts": null,
+     "weeks": 1
+    },
+    {
+     "id": "S07",
+     "run": 8,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 5
+    },
+    {
+     "id": "S01",
+     "run": 9,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S02",
+     "run": 9,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S03",
+     "run": 9,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 2
+    },
+    {
+     "id": "S04",
+     "run": 9,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S05",
+     "run": 9,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S06",
+     "run": 9,
+     "recall5": 1.0,
+     "facts": null,
+     "weeks": 1
+    },
+    {
+     "id": "S07",
+     "run": 9,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 5
+    },
+    {
+     "id": "S01",
+     "run": 10,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S02",
+     "run": 10,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S03",
+     "run": 10,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 2
+    },
+    {
+     "id": "S04",
+     "run": 10,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S05",
+     "run": 10,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S06",
+     "run": 10,
+     "recall5": 1.0,
+     "facts": null,
+     "weeks": 1
+    },
+    {
+     "id": "S07",
+     "run": 10,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 5
+    },
+    {
+     "id": "S01",
+     "run": 11,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S02",
+     "run": 11,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S03",
+     "run": 11,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 2
+    },
+    {
+     "id": "S04",
+     "run": 11,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S05",
+     "run": 11,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S06",
+     "run": 11,
+     "recall5": 1.0,
+     "facts": null,
+     "weeks": 1
+    },
+    {
+     "id": "S07",
+     "run": 11,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 5
+    },
+    {
+     "id": "S01",
+     "run": 12,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S02",
+     "run": 12,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S03",
+     "run": 12,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 2
+    },
+    {
+     "id": "S04",
+     "run": 12,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S05",
+     "run": 12,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S06",
+     "run": 12,
+     "recall5": 1.0,
+     "facts": null,
+     "weeks": 1
+    },
+    {
+     "id": "S07",
+     "run": 12,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 5
+    },
+    {
+     "id": "S01",
+     "run": 13,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S02",
+     "run": 13,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S03",
+     "run": 13,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 2
+    },
+    {
+     "id": "S04",
+     "run": 13,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S05",
+     "run": 13,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S06",
+     "run": 13,
+     "recall5": 1.0,
+     "facts": null,
+     "weeks": 1
+    },
+    {
+     "id": "S07",
+     "run": 13,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 5
+    },
+    {
+     "id": "S01",
+     "run": 14,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S02",
+     "run": 14,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S03",
+     "run": 14,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 2
+    },
+    {
+     "id": "S04",
+     "run": 14,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S05",
+     "run": 14,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S06",
+     "run": 14,
+     "recall5": 1.0,
+     "facts": null,
+     "weeks": 1
+    },
+    {
+     "id": "S07",
+     "run": 14,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 5
+    },
+    {
+     "id": "S01",
+     "run": 15,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S02",
+     "run": 15,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S03",
+     "run": 15,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 2
+    },
+    {
+     "id": "S04",
+     "run": 15,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S05",
+     "run": 15,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S06",
+     "run": 15,
+     "recall5": 1.0,
+     "facts": null,
+     "weeks": 1
+    },
+    {
+     "id": "S07",
+     "run": 15,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 5
+    },
+    {
+     "id": "S01",
+     "run": 16,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S02",
+     "run": 16,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S03",
+     "run": 16,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 2
+    },
+    {
+     "id": "S04",
+     "run": 16,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S05",
+     "run": 16,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S06",
+     "run": 16,
+     "recall5": 1.0,
+     "facts": null,
+     "weeks": 1
+    },
+    {
+     "id": "S07",
+     "run": 16,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 5
+    },
+    {
+     "id": "S01",
+     "run": 17,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S02",
+     "run": 17,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S03",
+     "run": 17,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 2
+    },
+    {
+     "id": "S04",
+     "run": 17,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S05",
+     "run": 17,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S06",
+     "run": 17,
+     "recall5": 1.0,
+     "facts": null,
+     "weeks": 1
+    },
+    {
+     "id": "S07",
+     "run": 17,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 5
+    },
+    {
+     "id": "S01",
+     "run": 18,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S02",
+     "run": 18,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S03",
+     "run": 18,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 2
+    },
+    {
+     "id": "S04",
+     "run": 18,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S05",
+     "run": 18,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S06",
+     "run": 18,
+     "recall5": 1.0,
+     "facts": null,
+     "weeks": 1
+    },
+    {
+     "id": "S07",
+     "run": 18,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 5
+    },
+    {
+     "id": "S01",
+     "run": 19,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S02",
+     "run": 19,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S03",
+     "run": 19,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 2
+    },
+    {
+     "id": "S04",
+     "run": 19,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S05",
+     "run": 19,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S06",
+     "run": 19,
+     "recall5": 1.0,
+     "facts": null,
+     "weeks": 1
+    },
+    {
+     "id": "S07",
+     "run": 19,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 5
+    },
+    {
+     "id": "S01",
+     "run": 20,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S02",
+     "run": 20,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S03",
+     "run": 20,
+     "recall5": 0.5,
+     "facts": 0.0,
+     "weeks": 2
+    },
+    {
+     "id": "S04",
+     "run": 20,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 2
+    },
+    {
+     "id": "S05",
+     "run": 20,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 1
+    },
+    {
+     "id": "S06",
+     "run": 20,
+     "recall5": 1.0,
+     "facts": null,
+     "weeks": 1
+    },
+    {
+     "id": "S07",
+     "run": 20,
+     "recall5": 1.0,
+     "facts": 1.0,
+     "weeks": 5
+    }
+   ],
+   "recall5": 0.9286,
+   "facts": 0.8333,
+   "week_chunks_retrieved": 280
+  }
+ }
+}

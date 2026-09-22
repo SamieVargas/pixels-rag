@@ -1,0 +1,49 @@
+{
+ "generated": "2026-09-22T15:59:15+00:00",
+ "rows": [
+  {
+   "id": "H01",
+   "arm": "with history",
+   "route": "aggregate",
+   "route_ok": true,
+   "plan_ok": true,
+   "rewritten": "What was my average rating on hot yoga days?",
+   "exact": null,
+   "facts": 1.0,
+   "answer": "On days when exercise contained hot yoga, there were 28 such days with a mean rating of 3.3. In comparison, all other days (90 days) had a mean rating of 3.1, i"
+  },
+  {
+   "id": "H01",
+   "arm": "alone",
+   "route": "filter",
+   "route_ok": false,
+   "plan_ok": false,
+   "rewritten": "What were the hot yoga days like?",
+   "exact": null,
+   "facts": 0.0,
+   "answer": "Hot yoga was the primary exercise throughout the log. On hot yoga days, you consistently had moderate to high activity levels, with steps ranging from 5,159 to "
+  },
+  {
+   "id": "H02",
+   "arm": "with history",
+   "route": "filter",
+   "route_ok": true,
+   "plan_ok": true,
+   "rewritten": "Which days in June was my sleep score under 60?",
+   "exact": true,
+   "facts": null,
+   "answer": "Your log covers entries from 06-08 through 06-29. The entries document a range of emotional states, sleep quality, physical activity, and wellness habits throug"
+  },
+  {
+   "id": "H02",
+   "arm": "alone",
+   "route": "unanswerable",
+   "route_ok": false,
+   "plan_ok": false,
+   "rewritten": null,
+   "exact": false,
+   "facts": null,
+   "answer": "The log does not track that, so there is nothing to answer from."
+  }
+ ]
+}
