@@ -254,8 +254,33 @@ unless asked for and why the default stays local whatever its number turns
 out to be. Arms that cannot run say so in the table rather than failing the
 run.
 
+### The headline finding, reproduced deterministically
+
+The finding this project has been quoted on, that hot yoga plus walking beat
+everything else for sleep and recovery, came from asking the model.
+`python analysis/recovery.py` computes it from the day records instead:
+mean sleep score and body battery on the habit's days against all other
+days, n per group, a seeded bootstrap interval on the difference, and the
+same the morning after. The fixture plants that pattern, so on the fixture
+the table confirms the code rather than the finding; the real-data table is
+`python analysis/recovery.py --days chroma_db/days.json` and lands beside
+the eval results.
+
+| Habit | Metric | n | Same day | Others | Diff [95% CI] |
+| --- | --- | --- | --- | --- | --- |
+| hot yoga + walking | sleep score | 9 | 70.4 | 62.4 | +8.0 [+2.2, +13.6] |
+| hot yoga + walking | body battery | 9 | 58.6 | 44.4 | +14.2 [+3.3, +22.8] |
+| meditation | sleep score | 59 | 63.2 | 62.9 | +0.3 [-3.3, +3.9] |
+| sunlight | body battery | 71 | 46.7 | 43.5 | +3.2 [-1.7, +8.2] |
+
+The full table, every habit with the next-day columns, is in
+`evals/results/recovery-<date>.md`. Where the model's answer and this table
+agree, the story is that the model surfaced it and the aggregation confirmed
+it. Where they disagree, that is the better story, and the reason Part 3
+routes aggregation questions away from retrieval.
+
 ### What v2 does not do yet
 
-Parts 9 to 12 of the plan: the headline finding reproduced deterministically, query
-rewriting for follow-ups, a privacy page with `--explain`, and a local MCP
-server. Each lands on its own PR with its own number.
+Parts 10 to 12 of the plan: query rewriting for follow-ups, a privacy page
+with `--explain`, and a local MCP server. Each lands on its own PR with its
+own number.
