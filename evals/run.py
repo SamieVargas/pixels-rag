@@ -27,6 +27,7 @@ from core import index as I  # noqa: E402
 from core.contracts import MODEL  # noqa: E402
 from core.days import load_days, latest_date  # noqa: E402
 from core.pipeline import ask, gather  # noqa: E402
+from core.rerank import make_reranker  # noqa: E402
 from core.router import resolve  # noqa: E402
 
 KS = (3, 5, 10)
@@ -76,12 +77,12 @@ def facts_present(facts, text):
     return round(sum(1 for f in facts if str(f).lower() in t) / len(facts), 4)
 
 
-def run_question(g, *, days, collection, client, contract, top_k, offline, ks=KS):
+def run_question(g, *, days, collection, client, contract, top_k, offline, ks=KS, reranker=None):
     today = latest_date(days)
     t0 = time.time()
     if offline:
         plan = resolve(g["plan"], today)
-        ev = gather(g["question"], plan, days=days, collection=collection, top_k=top_k)
+        ev = gather(g["question"], plan, days=days, collection=collection, top_k=top_k, reranker=reranker)
         rec = {"id": g["id"], "kind": g["kind"], "question": g["question"], "route": ev["route"], "route_ok": None,
                "retrieved": [c["id"] for c in ev["retrieved"]], "facts": None, "citations_valid": None,
                "abstained": None, "should_abstain": g["kind"] == "unanswerable", "retries": None, "parse_path": None,
@@ -89,7 +90,7 @@ def run_question(g, *, days, collection, client, contract, top_k, offline, ks=KS
         rec.update(score_retrieval(g["expected_dates"], ev["retrieved"], ks, kind=g["kind"]))
         rec["exact"] = exact_match(g["expected_dates"], ev["retrieved"], g["kind"])
         return rec
-    r = ask(g["question"], days=days, collection=collection, client=client, contract=contract, top_k=top_k)
+    r = ask(g["question"], days=days, collection=collection, client=client, contract=contract, top_k=top_k, reranker=reranker)
     invalid_citation = any("not among the retrieved" in v or "which was not retrieved" in v for v in r["validation"]["violations"])
     rec = {"id": g["id"], "kind": g["kind"], "question": g["question"], "route": r["route"], "route_ok": r["route"] == g["kind"],
            "retrieved": [c["id"] for c in r["retrieved"]], "facts": facts_present(g["expected_facts"], r["answer"]["answer"]),
@@ -141,8 +142,8 @@ def pct(x):
     return "n/a" if x is None else f"{x * 100:.0f}%"
 
 
-def render(records, agg, *, offline, contract, embedding, ks=KS):
-    head = f"# pixels-rag eval · {date.today().isoformat()} · {'offline, plans from the golden set' if offline else f'keyed, `{MODEL}`, contract `{contract}`'} · embedding `{embedding}`"
+def render(records, agg, *, offline, contract, embedding, ks=KS, rerank=None):
+    head = f"# pixels-rag eval · {date.today().isoformat()} · {'offline, plans from the golden set' if offline else f'keyed, `{MODEL}`, contract `{contract}`'} · embedding `{embedding}`" + (f" · rerank `{rerank}`" if rerank and rerank != "none" else "")
     lines = [head, "", "| Measure | Result |", "| --- | --- |", f"| Questions scored | {agg['n']} |"]
     lines.append(f"| Route accuracy (router kind = golden kind) | {pct(agg['route_accuracy']) if not offline else 'n/a offline'} |")
     for kind in ("semantic", "filter"):
@@ -203,6 +204,38 @@ def run_ablation(golden, *, days, client, contract, top_k, offline, runs, embedd
     return "\n".join(lines), arms
 
 
+def run_rerank_compare(golden, *, days, collection, top_k, reranker_name):
+    """Plain top-k against retrieve-20-then-rerank-to-k, on the semantic
+    questions, retrieval only. Recall@5 and the milliseconds per question."""
+    sem = [g for g in golden if g["kind"] == "semantic"]
+    today = latest_date(days)
+    rr = make_reranker(reranker_name)
+    rows = []
+    for g in sem:
+        plan = resolve(g["plan"], today)
+        t0 = time.time()
+        plain = gather(g["question"], plan, days=days, collection=collection, top_k=top_k)
+        plain_ms = int((time.time() - t0) * 1000)
+        t0 = time.time()
+        rer = gather(g["question"], plan, days=days, collection=collection, top_k=top_k, reranker=rr)
+        rer_ms = int((time.time() - t0) * 1000)
+        rows.append({"id": g["id"], "plain": score_retrieval(g["expected_dates"], plain["retrieved"])["recall"].get("5"),
+                     "reranked": score_retrieval(g["expected_dates"], rer["retrieved"])["recall"].get("5"),
+                     "plain_ms": plain_ms, "reranked_ms": rer_ms, "rerank_only_ms": rer["rerank_ms"]})
+    a, b = _mean([r["plain"] for r in rows]), _mean([r["reranked"] for r in rows])
+    lines = [f"# Reranking · {date.today().isoformat()} · reranker `{reranker_name}` · {len(sem)} semantic questions · retrieval only",
+             "", "Plain: dense top-k. Reranked: dense top-20, then the reranker keeps the top k.", "",
+             "| Measure | Plain top-k | Retrieve 20, rerank to k |", "| --- | --- | --- |",
+             f"| Recall@5 | {pct(a)} | {pct(b)} |",
+             f"| Mean ms per question (retrieval, plus reranking) | {_mean([r['plain_ms'] for r in rows])} | {_mean([r['reranked_ms'] for r in rows])} (reranker alone {_mean([r['rerank_only_ms'] for r in rows])}) |",
+             "", "| Q | Plain | Reranked |", "| --- | --- | --- |"]
+    for r in rows:
+        lines.append(f"| {r['id']} | {pct(r['plain'])} | {pct(r['reranked'])} |")
+    gain = None if a is None or b is None else round((b - a) * 100, 1)
+    lines += ["", f"Gain: {gain:+.1f} points of recall@5." if gain is not None else "Gain: n/a"]
+    return "\n".join(lines), rows
+
+
 def main(argv=None, client=None):
     p = argparse.ArgumentParser(description="pixels-rag retrieval evals")
     p.add_argument("--golden", default=str(ROOT / "evals" / "golden.jsonl"))
@@ -214,6 +247,8 @@ def main(argv=None, client=None):
     p.add_argument("--only", default=None, help="comma-separated question ids")
     p.add_argument("--ablation", action="store_true", help="chunk granularity ablation on the semantic questions")
     p.add_argument("--ablation-runs", type=int, default=ABLATION_RUNS)
+    p.add_argument("--rerank", choices=("none", "lexical", "cross-encoder"), default="none", help="rerank the top 20 to top-k before answering")
+    p.add_argument("--rerank-compare", action="store_true", help="plain top-k against reranked, semantic questions, retrieval only")
     p.add_argument("--out", default=str(ROOT / "evals" / "results"))
     args = p.parse_args(argv)
 
@@ -245,13 +280,23 @@ def main(argv=None, client=None):
 
     chroma = I.make_client()
     coll, _ = I.build(chroma, days, name="eval", embedding_function=ef)
+    if args.rerank_compare:
+        table, rows = run_rerank_compare(golden, days=days, collection=coll, top_k=args.top_k, reranker_name=args.rerank if args.rerank != "none" else "lexical")
+        print("\n" + table)
+        name = args.rerank if args.rerank != "none" else "lexical"
+        (out / f"{stamp}-rerank-{name}.md").write_text(table + "\n", encoding="utf-8")
+        (out / f"{stamp}-rerank-{name}.json").write_text(json.dumps({"generated": datetime.now(timezone.utc).isoformat(timespec="seconds"), "reranker": name,
+                                                                    "embedding": args.embedding, "rows": rows}, indent=1), encoding="utf-8")
+        return 0
+    reranker = make_reranker(args.rerank)
     records = []
     for g in golden:
-        r = run_question(g, days=days, collection=coll, client=client, contract=args.contract, top_k=args.top_k, offline=args.offline)
+        r = run_question(g, days=days, collection=coll, client=client, contract=args.contract, top_k=args.top_k, offline=args.offline, reranker=reranker)
         records.append(r)
         print(f"  {g['id']:4} {g['kind']:12} route={r['route']:12} recall@5={r['recall'].get('5')} facts={r['facts']} {'HARD FAIL' if r['hard_fail'] else ''}", flush=True)
     agg = aggregate_scores(records)
-    table = render(records, agg, offline=args.offline, contract=args.contract, embedding=args.embedding)
+    table = render(records, agg, offline=args.offline, contract=args.contract, embedding=args.embedding, rerank=args.rerank)
+    stamp += "" if args.rerank == "none" else f"-rerank-{args.rerank}"
     print("\n" + table)
     (out / f"{stamp}.md").write_text(table + "\n", encoding="utf-8")
     (out / f"{stamp}.json").write_text(json.dumps({"generated": datetime.now(timezone.utc).isoformat(timespec="seconds"), "offline": args.offline,

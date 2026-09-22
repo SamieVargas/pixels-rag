@@ -10,6 +10,7 @@ from core.aggregate import aggregate, render_table
 from core.answer import generate_answer
 from core.contracts import MODEL
 from core.days import latest_date
+from core.rerank import CANDIDATES, rerank
 from core.router import classify, resolve
 
 EVIDENCE_CAP = 30
@@ -23,12 +24,13 @@ def _evidence(chunks: list[dict]) -> str:
     return text
 
 
-def gather(question: str, plan: dict, *, days, collection, top_k: int = 8) -> dict:
+def gather(question: str, plan: dict, *, days, collection, top_k: int = 8, reranker=None, candidates: int = CANDIDATES) -> dict:
     """The evidence for a resolved plan, with no model call: the retrieved
     chunks (semantic), the matching days (filter), the computed table
-    (aggregate) or nothing (unanswerable)."""
+    (aggregate) or nothing (unanswerable). With a reranker, the dense search
+    returns `candidates` and the reranker keeps `top_k`."""
     route = plan["kind"]
-    out = {"route": route, "retrieved": [], "table": None, "evidence": None, "allowed_texts": [], "covered_ids": []}
+    out = {"route": route, "retrieved": [], "table": None, "evidence": None, "allowed_texts": [], "covered_ids": [], "rerank_ms": None}
     if route == "unanswerable":
         return out
     if route == "aggregate":
@@ -48,7 +50,12 @@ def gather(question: str, plan: dict, *, days, collection, top_k: int = 8) -> di
         allowed = None
         if plan["filters"] or plan["date_range"]:
             allowed = [d["date"] for d in F.apply(days, plan["filters"], plan["date_range"])]
-        chunks = I.retrieve(collection, plan["query"] or question, top_k, allowed_ids=allowed)
+        q = plan["query"] or question
+        if reranker is not None:
+            chunks, ms = rerank(q, I.retrieve(collection, q, max(candidates, top_k), allowed_ids=allowed), reranker, top_k)
+            out["rerank_ms"] = ms
+        else:
+            chunks = I.retrieve(collection, q, top_k, allowed_ids=allowed)
     out.update(retrieved=chunks, covered_ids=[c["id"] for c in chunks], evidence=_evidence(chunks) if chunks else None,
                allowed_texts=[c["text"] for c in chunks[:EVIDENCE_CAP]])
     return out
@@ -58,7 +65,7 @@ NO_MATCH = {"filter": "No logged day matches those conditions.", "semantic": "No
 
 
 def ask(question: str, *, days, collection, client, today=None, top_k: int = 8, contract="native",
-        history=None, plan=None, model=MODEL) -> dict:
+        history=None, plan=None, model=MODEL, reranker=None) -> dict:
     t0 = time.time()
     today = today or latest_date(days)
     calls = []
@@ -68,7 +75,7 @@ def ask(question: str, *, days, collection, client, today=None, top_k: int = 8, 
         plan = resolve(decision, today)
     else:
         plan = resolve(plan, today)
-    g = gather(question, plan, days=days, collection=collection, top_k=top_k)
+    g = gather(question, plan, days=days, collection=collection, top_k=top_k, reranker=reranker)
     route, retrieved = g["route"], g["retrieved"]
     ameta = None
     if route == "unanswerable":
@@ -92,5 +99,5 @@ def ask(question: str, *, days, collection, client, today=None, top_k: int = 8, 
                   "parse_path": ameta["parse_path"] if ameta else None}
     usage = {"input_tokens": sum(c.get("input_tokens", 0) for c in calls), "output_tokens": sum(c.get("output_tokens", 0) for c in calls)}
     return {"question": question, "route": route, "plan": plan, "retrieved": [{k: v for k, v in c.items() if k != "text"} for c in retrieved],
-            "table": g["table"], "answer": answer, "validation": validation, "counts": counts, "usage": usage,
+            "table": g["table"], "answer": answer, "validation": validation, "counts": counts, "usage": usage, "rerank_ms": g["rerank_ms"],
             "model_calls": len(calls), "calls": calls, "latency_ms": int((time.time() - t0) * 1000)}

@@ -216,8 +216,28 @@ rating are warnings, counted in the report and listed by day. `--stats`
 shows the same report without touching the index. On the fixture the report
 is clean apart from its five deliberately unlogged days.
 
+### Reranking, measured
+
+`--rerank cross-encoder` retrieves the top 20 and lets a local cross-encoder
+(MS MARCO MiniLM from sentence-transformers, nothing leaves the machine) keep
+the top k. `--rerank lexical` is a token-overlap baseline that needs no model,
+there so the wiring can be tested and run anywhere. Both are off by default,
+and `python evals/run.py --offline --rerank-compare --rerank <name>` writes
+the comparison against plain top-k on the semantic questions.
+
+| Reranker | Recall@5 plain | Recall@5 reranked | Added ms per question |
+| --- | --- | --- | --- |
+| lexical (offline, 2026-09-22) | 89% | 89% | 0 |
+| cross-encoder | pending: needs `pip install sentence-transformers` and the model download | | |
+
+The lexical baseline changes nothing, which is a tie and is reported as one.
+The three semantic misses are adjacency (S03) and a whole week (S06), which
+reordering the candidates does not repair. The cross-encoder row is the one
+that decides whether the flag earns a default; if its gain is under a few
+points it stays off.
+
 ### What v2 does not do yet
 
-Parts 7 to 12 of the plan: reranking and embedding-model ablations, the headline finding reproduced deterministically, query
+Parts 8 to 12 of the plan: the embedding-model ablation, the headline finding reproduced deterministically, query
 rewriting for follow-ups, a privacy page with `--explain`, and a local MCP
 server. Each lands on its own PR with its own number.
