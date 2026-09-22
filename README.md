@@ -291,7 +291,17 @@ asks each one with its prior turn in history and alone, and reports whether
 the route and the plan equal the golden plan under each arm. That table needs
 a key, since the rewriting is the router's, and reads pending until then.
 
+### What leaves the machine
+
+`docs/PRIVACY.md` is one page: the data stays in the local ChromaDB; a
+question sends only the retrieved day chunks, or the computed table, to the
+model provider; the logs carry dates, scores, routes and usage and never the
+text; the embedding API arm is off by default and says what it sends.
+`python main.py --explain "..."` prints, for each retrieved chunk, its
+score, which filters matched, whether it sat in the date range and whether
+the answer cited it, with the route, the resolved plan and the validator's
+outcome, so any answer can be audited in ten seconds.
+
 ### What v2 does not do yet
 
-Parts 11 and 12 of the plan: a privacy page with `--explain`, and a local
-MCP server. Each lands on its own PR with its own number.
+Part 12 of the plan, the local MCP server, lands on its own PR.

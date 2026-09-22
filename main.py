@@ -191,6 +191,7 @@ def main():
     parser.add_argument("--contract", choices=("native", "prompt"), default="native", help="structured output, or the prompt and the parser")
     parser.add_argument("--rerank", choices=("none", "lexical", "cross-encoder"), default="none", help="retrieve 20 and rerank to top-k (off by default; see the eval)")
     parser.add_argument("--chat", action="store_true", help="a conversation: the last three turns are kept and follow-ups rewritten")
+    parser.add_argument("--explain", action="store_true", help="per retrieved chunk: score, filters matched, route; the audit view")
     parser.add_argument("--json", action="store_true", help="print the full result as JSON")
     parser.add_argument("--v1", action="store_true", help="the v1 path: top-k and a prompt-only citation request")
     parser.add_argument("--since", metavar="YYYY-MM-DD", help="Upsert the days logged since this date (idempotent)")
@@ -251,6 +252,9 @@ def main():
         print(json.dumps(r, indent=1, default=str))
         return
     render_result(r)
+    if args.explain:
+        from core.explain import explain, render
+        console.print(Panel(Markdown(render(explain(r, days))), title="Explain", border_style="cyan"))
 
 
 if __name__ == "__main__":
