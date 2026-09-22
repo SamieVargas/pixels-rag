@@ -117,6 +117,26 @@ def main():
     check("numbers inside dates are not numbers", numbers_in("on 2026-06-14 and 6/14 it was 48") == {"48"})
     check("a number from the question is allowed", validate_answer(answer("Under 60: none.", ["2026-06-14"]), retrieved_ids=retrieved, allowed_texts=texts, question="under 60?") == [])
 
+    print("schemas obey the API's structured-output rules")
+    from core.contracts import router_schema, answer_schema
+
+    def nodes(o):
+        if isinstance(o, dict):
+            yield o
+            for v in o.values():
+                yield from nodes(v)
+        elif isinstance(o, list):
+            for v in o:
+                yield from nodes(v)
+
+    for name, schema in (("router", router_schema()), ("answer", answer_schema())):
+        all_nodes = list(nodes(schema))
+        check(f"{name}: no enum on a list-typed field", not any(isinstance(n.get("type"), list) and "enum" in n for n in all_nodes))
+        check(f"{name}: no null inside an enum", not any(None in n.get("enum", []) for n in all_nodes))
+        check(f"{name}: every object closes additionalProperties", all(n.get("additionalProperties") is False for n in all_nodes if n.get("type") == "object"))
+    metric = router_schema()["properties"]["aggregate"]["properties"]["metric"]
+    check("metric is a string enum or null", [b.get("type") for b in metric["anyOf"]] == ["string", "null"] and "rating" in metric["anyOf"][0]["enum"])
+
     print("router: contract, resolution, fallbacks")
     fc = FakeClient([decision("filter", phrase="in July", filters=[{"field": "exercise", "op": "contains", "value": "hot yoga"}])])
     dec, meta = classify(fc, "List the days I did hot yoga in July.", today=TODAY)
