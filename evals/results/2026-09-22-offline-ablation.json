@@ -1,0 +1,122 @@
+{
+ "generated": "2026-09-22T04:48:59+00:00",
+ "runs": 1,
+ "offline": true,
+ "embedding": "default",
+ "arms": {
+  "A": {
+   "level": "day",
+   "rows": [
+    {
+     "id": "S01",
+     "run": 1,
+     "recall5": 1.0,
+     "facts": null,
+     "weeks": 0
+    },
+    {
+     "id": "S02",
+     "run": 1,
+     "recall5": 1.0,
+     "facts": null,
+     "weeks": 0
+    },
+    {
+     "id": "S03",
+     "run": 1,
+     "recall5": 0.5,
+     "facts": null,
+     "weeks": 0
+    },
+    {
+     "id": "S04",
+     "run": 1,
+     "recall5": 1.0,
+     "facts": null,
+     "weeks": 0
+    },
+    {
+     "id": "S05",
+     "run": 1,
+     "recall5": 1.0,
+     "facts": null,
+     "weeks": 0
+    },
+    {
+     "id": "S06",
+     "run": 1,
+     "recall5": 0.7143,
+     "facts": null,
+     "weeks": 0
+    },
+    {
+     "id": "S07",
+     "run": 1,
+     "recall5": 1.0,
+     "facts": null,
+     "weeks": 0
+    }
+   ],
+   "recall5": 0.8878,
+   "facts": null,
+   "week_chunks_retrieved": 0
+  },
+  "B": {
+   "level": "day+week",
+   "rows": [
+    {
+     "id": "S01",
+     "run": 1,
+     "recall5": 1.0,
+     "facts": null,
+     "weeks": 2
+    },
+    {
+     "id": "S02",
+     "run": 1,
+     "recall5": 1.0,
+     "facts": null,
+     "weeks": 1
+    },
+    {
+     "id": "S03",
+     "run": 1,
+     "recall5": 0.5,
+     "facts": null,
+     "weeks": 2
+    },
+    {
+     "id": "S04",
+     "run": 1,
+     "recall5": 1.0,
+     "facts": null,
+     "weeks": 2
+    },
+    {
+     "id": "S05",
+     "run": 1,
+     "recall5": 1.0,
+     "facts": null,
+     "weeks": 1
+    },
+    {
+     "id": "S06",
+     "run": 1,
+     "recall5": 1.0,
+     "facts": null,
+     "weeks": 1
+    },
+    {
+     "id": "S07",
+     "run": 1,
+     "recall5": 1.0,
+     "facts": null,
+     "weeks": 5
+    }
+   ],
+   "recall5": 0.9286,
+   "facts": null,
+   "week_chunks_retrieved": 14
+  }
+ }
+}
