@@ -279,8 +279,19 @@ agree, the story is that the model surfaced it and the aggregation confirmed
 it. Where they disagree, that is the better story, and the reason Part 3
 routes aggregation questions away from retrieval.
 
+### Follow-ups and query rewriting
+
+`python main.py --chat` keeps the last three turns. Before anything is
+retrieved, the router sees them and rewrites a follow-up ("and on hot yoga
+days?", "only in June?") into a standalone question, which is the
+`rewritten_query` field of its contract; the filters, dates and aggregate
+spec are filled as if the full question had been asked. The two follow-up
+questions in the golden set score this: `python evals/run.py --followups`
+asks each one with its prior turn in history and alone, and reports whether
+the route and the plan equal the golden plan under each arm. That table needs
+a key, since the rewriting is the router's, and reads pending until then.
+
 ### What v2 does not do yet
 
-Parts 10 to 12 of the plan: query rewriting for follow-ups, a privacy page
-with `--explain`, and a local MCP server. Each lands on its own PR with its
-own number.
+Parts 11 and 12 of the plan: a privacy page with `--explain`, and a local
+MCP server. Each lands on its own PR with its own number.

@@ -8,6 +8,7 @@ Life in Pixels RAG — ask natural language questions about your behavioral data
   python main.py --stats                        # corpus stats, no API calls
   python main.py --since 2026-08-01             # upsert the days logged since a date, idempotent
   python main.py --status                       # how far behind the source the index is
+  python main.py --chat                         # a conversation; follow-ups are rewritten from the last three turns
   python main.py --v1 "question"                # the v1 path: top-k, prompt-only citations
 
 v2 routes each question (semantic, filter, aggregate, unanswerable), answers
@@ -133,6 +134,31 @@ def load_corpus(db: Path):
     return normalize_rows(rows), I.load(I.make_client(str(db)))
 
 
+def chat(db: Path, *, top_k: int, contract: str, rerank: str) -> None:
+    """A conversation over the index. Each question sees the last three turns."""
+    import anthropic
+    from core.chat import Session
+    from core.rerank import make_reranker
+    try:
+        days, collection = load_corpus(db)
+    except Exception:
+        console.print(f"[red]No index at {db}. Run `python main.py --rebuild` first.[/red]")
+        return
+    session = Session(days=days, collection=collection, client=anthropic.Anthropic(), top_k=top_k, contract=contract, reranker=make_reranker(rerank))
+    console.print("[bold]Ask about your days. Follow-ups work (\"and on weekends?\"). Empty line to quit.[/bold]")
+    while True:
+        try:
+            q = console.input("\n[cyan]you>[/cyan] ").strip()
+        except (EOFError, KeyboardInterrupt):
+            break
+        if not q:
+            break
+        r = session.ask(q)
+        if r["plan"].get("query") and r["route"] == "semantic" and session.history()[:-2]:
+            console.print(f"[dim]searched as: {r['plan']['query']}[/dim]")
+        render_result(r)
+
+
 def render_result(r: dict) -> None:
     a = r["answer"]
     console.print(Panel(Markdown(a["answer"] or "_(no answer)_"), title=f"Answer · route: {r['route']}", border_style="green" if r["validation"]["ok"] else "yellow"))
@@ -164,6 +190,7 @@ def main():
     parser.add_argument("--top-k", type=int, default=8, help="Days to retrieve per query (default: 8)")
     parser.add_argument("--contract", choices=("native", "prompt"), default="native", help="structured output, or the prompt and the parser")
     parser.add_argument("--rerank", choices=("none", "lexical", "cross-encoder"), default="none", help="retrieve 20 and rerank to top-k (off by default; see the eval)")
+    parser.add_argument("--chat", action="store_true", help="a conversation: the last three turns are kept and follow-ups rewritten")
     parser.add_argument("--json", action="store_true", help="print the full result as JSON")
     parser.add_argument("--v1", action="store_true", help="the v1 path: top-k and a prompt-only citation request")
     parser.add_argument("--since", metavar="YYYY-MM-DD", help="Upsert the days logged since this date (idempotent)")
@@ -189,6 +216,10 @@ def main():
         ingest_since(db, args.source, args.since)
         if not args.question:
             return
+
+    if args.chat:
+        chat(db, top_k=args.top_k, contract=args.contract, rerank=args.rerank)
+        return
 
     if args.rebuild or (args.question is None and not args.since):
         rebuild(db, args.source, args.days)

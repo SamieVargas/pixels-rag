@@ -35,9 +35,9 @@ KS = (3, 5, 10)
 ABLATION_RUNS = 20
 
 
-def load_golden(path):
+def load_golden(path, follow_ups=False):
     rows = [json.loads(l) for l in Path(path).read_text(encoding="utf-8").splitlines() if l.strip()]
-    return [r for r in rows if not r.get("requires_history")]
+    return [r for r in rows if bool(r.get("requires_history")) == follow_ups]
 
 
 def covered_in_order(retrieved):
@@ -255,6 +255,37 @@ def run_embedding_ablation(golden, *, days, arms, top_k):
     return "\n".join(lines), rows
 
 
+def plan_matches(plan: dict, golden_plan: dict, today) -> bool:
+    """Route, filters, date range and aggregate spec equal to the golden plan's."""
+    want = resolve(golden_plan, today)
+    same = lambda a, b: json.dumps(a, sort_keys=True, default=str) == json.dumps(b, sort_keys=True, default=str)
+    return plan["kind"] == want["kind"] and same(plan["filters"], want["filters"]) and same(plan["date_range"], want["date_range"]) and same(plan["aggregate"], want["aggregate"])
+
+
+def run_followups(golden_path, *, days, collection, client, contract, top_k):
+    """The two follow-up questions, each asked with the prior turn in history
+    (rewriting on) and alone (rewriting off). Keyed: the router does the
+    rewriting, so there is no offline version of this table."""
+    fus = load_golden(golden_path, follow_ups=True)
+    today = latest_date(days)
+    rows = []
+    for g in fus:
+        for label, history in (("with history", g["history"]), ("alone", None)):
+            r = ask(g["question"], days=days, collection=collection, client=client, contract=contract, top_k=top_k, history=history)
+            rows.append({"id": g["id"], "arm": label, "route": r["route"], "route_ok": r["route"] == g["kind"],
+                         "plan_ok": plan_matches(r["plan"], g["plan"], today), "rewritten": r["plan"].get("query"),
+                         "exact": exact_match(g["expected_dates"], r["retrieved"], g["kind"]) if g["kind"] == "filter" else None,
+                         "facts": facts_present(g["expected_facts"], r["answer"]["answer"]), "answer": r["answer"]["answer"][:160]})
+            print(f"  {g['id']} {label:12} route={r['route']:12} plan_ok={rows[-1]['plan_ok']} rewritten={rows[-1]['rewritten']!r}", flush=True)
+    lines = [f"# Follow-ups · {date.today().isoformat()} · `{MODEL}` · contract `{contract}`", "",
+             "Each follow-up asked with its prior turn in history (the router rewrites it) and alone (no history).", "",
+             "| Q | Arm | Route | Plan equals golden | Filter set exact | Facts | Rewritten as |", "| --- | --- | --- | --- | --- | --- | --- |"]
+    for r in rows:
+        lines.append(f"| {r['id']} | {r['arm']} | {r['route']}{'' if r['route_ok'] else ' ✗'} | {'✓' if r['plan_ok'] else '✗'} | "
+                     f"{'n/a' if r['exact'] is None else ('✓' if r['exact'] else '✗')} | {pct(r['facts'])} | {r['rewritten'] or ''} |")
+    return "\n".join(lines), rows
+
+
 def main(argv=None, client=None):
     p = argparse.ArgumentParser(description="pixels-rag retrieval evals")
     p.add_argument("--golden", default=str(ROOT / "evals" / "golden.jsonl"))
@@ -269,6 +300,7 @@ def main(argv=None, client=None):
     p.add_argument("--rerank", choices=("none", "lexical", "cross-encoder"), default="none", help="rerank the top 20 to top-k before answering")
     p.add_argument("--rerank-compare", action="store_true", help="plain top-k against reranked, semantic questions, retrieval only")
     p.add_argument("--embedding-ablation", action="store_true", help="one index per embedding model, semantic questions, retrieval only")
+    p.add_argument("--followups", action="store_true", help="the two follow-up questions with and without history (keyed)")
     p.add_argument("--arms", default="minilm,bge-small,e5-small,openai", help="comma-separated arms for --embedding-ablation")
     p.add_argument("--out", default=str(ROOT / "evals" / "results"))
     args = p.parse_args(argv)
@@ -310,6 +342,17 @@ def main(argv=None, client=None):
 
     chroma = I.make_client()
     coll, _ = I.build(chroma, days, name="eval", embedding_function=ef)
+    if args.followups:
+        if args.offline:
+            print("--followups needs the router, so it needs a key; there is no offline version.", file=sys.stderr)
+            return 2
+        table, rows = run_followups(args.golden, days=days, collection=coll, client=client, contract=args.contract, top_k=args.top_k)
+        print("\n" + table)
+        (out / f"{stamp}-followups.md").write_text(table + "\n", encoding="utf-8")
+        (out / f"{stamp}-followups.json").write_text(json.dumps({"generated": datetime.now(timezone.utc).isoformat(timespec="seconds"), "rows": rows}, indent=1), encoding="utf-8")
+        print(f"wrote {out / (stamp + '-followups.md')} and .json")
+        return 0
+
     if args.rerank_compare:
         table, rows = run_rerank_compare(golden, days=days, collection=coll, top_k=args.top_k, reranker_name=args.rerank if args.rerank != "none" else "lexical")
         print("\n" + table)
