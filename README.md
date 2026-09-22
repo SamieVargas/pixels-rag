@@ -88,3 +88,114 @@ python main.py "What's different about my 5-star days vs my 1-2 star days?"
 | `query.py`        | Retrieve top-k → generate cited answer with Claude          |
 | `main.py`         | CLI entry point                                             |
 | `chroma_db/`      | Local vector store — git-ignored, rebuilt on demand         |
+
+## v2: retrieval you can measure, and a router that knows when retrieval is the wrong tool
+
+Everything above still holds and still runs (`--v1`). What v1 could not say
+is whether retrieval is any good, whether the citations are real, or what
+happens to "what was my average sleep on hot yoga days", which no amount of
+similarity search answers correctly. v2 adds those three things.
+
+### The router
+
+```
+question
+  └─ router · one Haiku call under a JSON Schema · kind, fields, operators, the date words
+       ├─ semantic      dense search over day chunks, restricted to the days the filters and dates allow
+       ├─ filter        the matching days, decided in code; the model summarizes them
+       ├─ aggregate     pandas computes the statistic; the model narrates the table and nothing else
+       └─ unanswerable  an admission, no model call
+```
+
+The model does the part that needs language and code does the part that
+needs to be right. Relative dates never reach the model as a problem to
+solve: the router copies the date words from the question ("the first two
+weeks of June", "last two weeks") and `core/dates.py` resolves them against
+the newest logged day, so a question means the same thing on every run.
+Filters run in `core/filters.py` over the day records, and the dense search
+is told which ids it may return. An aggregate question never touches the
+index. Every query logs its route.
+
+### The answer contract
+
+```jsonc
+{ "answer": "string",
+  "claims": [ { "text": "string", "dates": ["YYYY-MM-DD"] } ],
+  "cited_dates": ["YYYY-MM-DD"],
+  "unanswerable": false,
+  "why_unanswerable": "string or null" }
+```
+
+The prompt asks for citations; `core/validate.py` enforces them. A cited date
+has to be one the pipeline retrieved. A claim has to name at least one date
+unless the answer is an admission. Every number in the answer has to appear
+in a cited day's text, in the question, or in the computed table, because
+numbers are what the model is most tempted to invent about a time series.
+A failure goes back to the model once, with the violations as the next user
+turn, and the CLI prints the retrieved-but-uncited and cited-but-unretrieved
+counts on every answer. Structured output (`output_config.format` with the
+schema) is the default contract; `--contract prompt` runs the same shape
+through the prompt and the fence-stripping parser, and the pipeline records
+which path handled each reply.
+
+### Evals
+
+`evals/golden.jsonl` holds 28 questions across the four kinds, written before
+any retrieval run: seven semantic, seven filter, seven aggregate, five
+unanswerable, plus two follow-ups that wait for Part 10. They are written
+against `fixtures/days.json`, a seeded synthetic export with the real
+export's shape and a few planted days, since the real data stays off the
+repo (see `docs/decisions.md`). `python evals/run.py --offline` scores
+retrieval with the golden plans and no key; the keyed run lets the router
+decide and scores the answers.
+
+Offline, with the default local embedder (all-MiniLM-L6-v2), 2026-09-22:
+
+| Measure | Result |
+| --- | --- |
+| Semantic recall@3 / @5 / @10 | 63% / 89% / 93% · MRR 0.71 |
+| Filter: matched set equals the expected set | 100% of 7 |
+| Route accuracy, facts in the answer, citation validity, abstention | pending a keyed run |
+
+Three semantic questions carry the misses. S03 asks what recovery looked like
+the day after the trail run: the run day is found and the morning after is
+not, because "the day after" is adjacency, which similarity cannot express.
+S04 finds the severe-anxiety day at rank five. S06 asks about a whole week
+and five of its seven days make the top five, which is the case the chunking
+ablation was built for.
+
+Chunk granularity, offline, one run per arm (retrieval is deterministic
+without a key, so one run is the whole story; the twenty-run arms measure
+the answer's fact coverage and need a key):
+
+| Measure | A · day chunks | B · day + week rollups |
+| --- | --- | --- |
+| Recall@5 | 89% | 93% |
+| S06, the week question | 71% | 100% |
+| Week chunks retrieved | 0 | 14 |
+
+The rollup lifts the week question and changes nothing else. That is a
+narrower claim than "chunk design is the lever", and it is the one the data
+supports so far.
+
+### Running v2
+
+```bash
+pip install -r requirements.txt
+python main.py --source fixture --rebuild           # index the synthetic days
+python main.py "Did I sleep better on hot yoga days?"
+python main.py "Which days was my sleep score under 60?"
+python main.py --rebuild                             # your export, via .env
+python evals/run.py --offline                        # retrieval only, no key
+python evals/run.py                                  # the router and the answers, needs ANTHROPIC_API_KEY
+python evals/run.py --ablation                       # day vs day+week, 20 runs per arm
+python tests/test_core.py                            # everything, no key, no model download
+```
+
+### What v2 does not do yet
+
+Parts 5 to 12 of the plan: an incremental index with template and model
+versioning, a validation report on ingest, reranking and embedding-model
+ablations, the headline finding reproduced deterministically, query
+rewriting for follow-ups, a privacy page with `--explain`, and a local MCP
+server. Each lands on its own PR with its own number.
