@@ -68,14 +68,17 @@ def chunks_for(days: list[dict], level: str = "day") -> list[dict]:
     return chunks
 
 
-def build(client, days: list[dict], *, name: str = COLLECTION, level: str = "day", embedding_function=None):
-    """Build the collection from scratch. Returns (collection, chunks)."""
+def build(client, days: list[dict], *, name: str = COLLECTION, level: str = "day", embedding_function=None, extra_metadata=None):
+    """Build the collection from scratch. Returns (collection, chunks).
+    `extra_metadata` is stamped on the collection at creation; Chroma does
+    not allow the distance metric to be touched afterwards, so it has to go
+    in here rather than through modify()."""
     try:
         client.delete_collection(name)
     except Exception:
         pass
     kwargs = {"embedding_function": embedding_function} if embedding_function is not None else {}
-    coll = client.create_collection(name=name, metadata={"hnsw:space": "cosine", "level": level}, **kwargs)
+    coll = client.create_collection(name=name, metadata={"hnsw:space": "cosine", "level": level, **(extra_metadata or {})}, **kwargs)
     chunks = chunks_for(days, level)
     coll.add(ids=[c["id"] for c in chunks], documents=[c["text"] for c in chunks], metadatas=[c["metadata"] for c in chunks])
     return coll, chunks

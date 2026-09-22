@@ -192,10 +192,22 @@ python evals/run.py --ablation                       # day vs day+week, 20 runs 
 python tests/test_core.py                            # everything, no key, no model download
 ```
 
+### An index that stays current
+
+v1 was a one-shot export. `python main.py --since 2026-08-01` reads the days
+logged since a date and upserts them by `id = date`, so running it twice
+leaves the same index, and an edited day replaces its chunk in place. The
+collection records the chunk template version, a hash of `chunk.py`, and the
+embedding model that built it; when the code disagrees with any of the three,
+the next ingest rebuilds the whole index and says why, rather than mixing two
+chunk formats in one store. `python main.py --status` prints the newest
+indexed day, the newest day at the source, how many logged days the index is
+behind, and the version stamp. A living index is the difference between a
+demo and a tool you open on a Tuesday.
+
 ### What v2 does not do yet
 
-Parts 5 to 12 of the plan: an incremental index with template and model
-versioning, a validation report on ingest, reranking and embedding-model
-ablations, the headline finding reproduced deterministically, query
+Parts 6 to 12 of the plan: a validation report on ingest, reranking and
+embedding-model ablations, the headline finding reproduced deterministically, query
 rewriting for follow-ups, a privacy page with `--explain`, and a local MCP
 server. Each lands on its own PR with its own number.
