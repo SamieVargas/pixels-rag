@@ -10,6 +10,10 @@ expected dates in the retrieved set (k = 3, 5, 10), MRR, expected facts
 present in the answer, citation validity, abstention on unanswerable
 questions and on answerable ones, tokens and latency. Writes a markdown
 table and the raw records to evals/results/<date>[-offline][-ablation].md/json.
+
+Ctrl+C, or credit running out mid-run (the SDK raises, the shell sends the
+interrupt), writes the questions that finished to a -partial file, marked
+PARTIAL in the header, with exit code 130.
 """
 
 import argparse
@@ -173,36 +177,52 @@ def run_ablation(golden, *, days, client, contract, top_k, offline, runs, embedd
     today = latest_date(days)
     chroma = I.make_client()
     arms = {}
-    for arm, level in (("A", "day"), ("B", "day+week")):
-        coll, _ = I.build(chroma, days, name=f"ablation_{arm}", level=level, embedding_function=embedding_function)
-        rows = []
-        for run in range(1, runs + 1):
-            for g in sem:
-                plan = resolve(g["plan"], today)
-                if offline:
-                    ev = gather(g["question"], plan, days=days, collection=coll, top_k=top_k)
-                    sc = score_retrieval(g["expected_dates"], ev["retrieved"])
-                    rows.append({"id": g["id"], "run": run, "recall5": sc["recall"].get("5"), "facts": None, "weeks": sum(1 for c in ev["retrieved"] if c["id"].startswith("week:"))})
-                else:
-                    r = ask(g["question"], days=days, collection=coll, client=client, contract=contract, top_k=top_k, plan=g["plan"])
-                    sc = score_retrieval(g["expected_dates"], r["retrieved"])
-                    rows.append({"id": g["id"], "run": run, "recall5": sc["recall"].get("5"), "facts": facts_present(g["expected_facts"], r["answer"]["answer"]),
-                                 "weeks": sum(1 for c in r["retrieved"] if c["id"].startswith("week:"))})
-                print(f"  arm {arm} run {run}/{runs} {g['id']} recall@5={sc['recall'].get('5')}", flush=True)
-        arms[arm] = {"level": level, "rows": rows, "recall5": _mean([r["recall5"] for r in rows]), "facts": _mean([r["facts"] for r in rows]),
-                     "week_chunks_retrieved": sum(r["weeks"] for r in rows)}
-    lines = [f"# Chunk granularity ablation · {date.today().isoformat()} · {len(sem)} semantic questions × {runs} run(s) per arm · embedding `{embedding}`" + (" · offline" if offline else f" · `{MODEL}`"),
+    progress = {"planned": 2 * runs * len(sem), "completed": 0, "partial": False}
+    try:
+        for arm, level in (("A", "day"), ("B", "day+week")):
+            coll, _ = I.build(chroma, days, name=f"ablation_{arm}", level=level, embedding_function=embedding_function)
+            rows = []
+            arms[arm] = {"level": level, "rows": rows}
+            for run in range(1, runs + 1):
+                for g in sem:
+                    _ablation_question(g, arm=arm, run=run, runs=runs, rows=rows, plan_today=today, days=days, coll=coll, client=client,
+                                       contract=contract, top_k=top_k, offline=offline)
+                    progress["completed"] += 1
+    except KeyboardInterrupt:
+        progress["partial"] = True
+        print(f"\ninterrupted after {progress['completed']} of {progress['planned']} runs; writing the partial table", file=sys.stderr)
+    for arm in arms.values():
+        rows = arm["rows"]
+        arm.update({"recall5": _mean([r["recall5"] for r in rows]), "facts": _mean([r["facts"] for r in rows]),
+                    "week_chunks_retrieved": sum(r["weeks"] for r in rows)})
+    b = arms.get("B", {"recall5": None, "facts": None, "week_chunks_retrieved": 0, "rows": []})
+    lines = [f"# Chunk granularity ablation · {date.today().isoformat()} · {len(sem)} semantic questions × {runs} run(s) per arm · embedding `{embedding}`" + (" · offline" if offline else f" · `{MODEL}`")
+             + (f" · PARTIAL: {progress['completed']} of {progress['planned']} runs" if progress["partial"] else ""),
              "", "Arm A indexes one chunk per day. Arm B adds one deterministic rollup chunk per week, tagged `level: week`; a retrieved week counts as covering its seven days.", "",
              "| Measure | A · day chunks | B · day + week rollups |", "| --- | --- | --- |",
-             f"| Recall@5 (expected days covered) | {pct(arms['A']['recall5'])} | {pct(arms['B']['recall5'])} |",
-             f"| Expected facts in the answer | {pct(arms['A']['facts']) if not offline else 'n/a offline'} | {pct(arms['B']['facts']) if not offline else 'n/a offline'} |",
-             f"| Week chunks retrieved (total) | {arms['A']['week_chunks_retrieved']} | {arms['B']['week_chunks_retrieved']} |",
+             f"| Recall@5 (expected days covered) | {pct(arms['A']['recall5'])} | {pct(b['recall5'])} |",
+             f"| Expected facts in the answer | {pct(arms['A']['facts']) if not offline else 'n/a offline'} | {pct(b['facts']) if not offline else 'n/a offline'} |",
+             f"| Week chunks retrieved (total) | {arms['A']['week_chunks_retrieved']} | {b['week_chunks_retrieved']} |",
              "", "| Q | A recall@5 | B recall@5 |", "| --- | --- | --- |"]
     for g in sem:
         a = _mean([r["recall5"] for r in arms["A"]["rows"] if r["id"] == g["id"]])
-        b = _mean([r["recall5"] for r in arms["B"]["rows"] if r["id"] == g["id"]])
-        lines.append(f"| {g['id']} | {pct(a)} | {pct(b)} |")
-    return "\n".join(lines), arms
+        bq = _mean([r["recall5"] for r in b["rows"] if r["id"] == g["id"]])
+        lines.append(f"| {g['id']} | {pct(a)} | {pct(bq)} |")
+    return "\n".join(lines), arms, progress
+
+
+def _ablation_question(g, *, arm, run, runs, rows, plan_today, days, coll, client, contract, top_k, offline):
+    plan = resolve(g["plan"], plan_today)
+    if offline:
+        ev = gather(g["question"], plan, days=days, collection=coll, top_k=top_k)
+        sc = score_retrieval(g["expected_dates"], ev["retrieved"])
+        rows.append({"id": g["id"], "run": run, "recall5": sc["recall"].get("5"), "facts": None, "weeks": sum(1 for c in ev["retrieved"] if c["id"].startswith("week:"))})
+    else:
+        r = ask(g["question"], days=days, collection=coll, client=client, contract=contract, top_k=top_k, plan=g["plan"])
+        sc = score_retrieval(g["expected_dates"], r["retrieved"])
+        rows.append({"id": g["id"], "run": run, "recall5": sc["recall"].get("5"), "facts": facts_present(g["expected_facts"], r["answer"]["answer"]),
+                     "weeks": sum(1 for c in r["retrieved"] if c["id"].startswith("week:"))})
+    print(f"  arm {arm} run {run}/{runs} {g['id']} recall@5={sc['recall'].get('5')}", flush=True)
 
 
 def run_rerank_compare(golden, *, days, collection, top_k, reranker_name):
@@ -331,14 +351,15 @@ def main(argv=None, client=None):
         return 0
 
     if args.ablation:
-        table, arms = run_ablation(golden, days=days, client=client, contract=args.contract, top_k=args.top_k, offline=args.offline,
-                                   runs=args.ablation_runs, embedding_function=ef, embedding=args.embedding)
+        table, arms, progress = run_ablation(golden, days=days, client=client, contract=args.contract, top_k=args.top_k, offline=args.offline,
+                                             runs=args.ablation_runs, embedding_function=ef, embedding=args.embedding)
         print("\n" + table)
-        (out / f"{stamp}-ablation.md").write_text(table + "\n", encoding="utf-8")
-        (out / f"{stamp}-ablation.json").write_text(json.dumps({"generated": datetime.now(timezone.utc).isoformat(timespec="seconds"), "runs": args.ablation_runs,
-                                                                "offline": args.offline, "embedding": args.embedding, "arms": arms}, indent=1), encoding="utf-8")
-        print(f"wrote {out / (stamp + '-ablation.md')} and .json")
-        return 0
+        stem = f"{stamp}-ablation" + ("-partial" if progress["partial"] else "")
+        (out / f"{stem}.md").write_text(table + "\n", encoding="utf-8")
+        (out / f"{stem}.json").write_text(json.dumps({"generated": datetime.now(timezone.utc).isoformat(timespec="seconds"), "runs": args.ablation_runs,
+                                                      "offline": args.offline, "embedding": args.embedding, **progress, "arms": arms}, indent=1), encoding="utf-8")
+        print(f"wrote {out / (stem + '.md')} and .json")
+        return 130 if progress["partial"] else 0
 
     chroma = I.make_client()
     coll, _ = I.build(chroma, days, name="eval", embedding_function=ef)
@@ -363,19 +384,35 @@ def main(argv=None, client=None):
         return 0
     reranker = make_reranker(args.rerank)
     records = []
-    for g in golden:
-        r = run_question(g, days=days, collection=coll, client=client, contract=args.contract, top_k=args.top_k, offline=args.offline, reranker=reranker)
-        records.append(r)
-        print(f"  {g['id']:4} {g['kind']:12} route={r['route']:12} recall@5={r['recall'].get('5')} facts={r['facts']} {'HARD FAIL' if r['hard_fail'] else ''}", flush=True)
+    interrupted = False
+    try:
+        for g in golden:
+            r = run_question(g, days=days, collection=coll, client=client, contract=args.contract, top_k=args.top_k, offline=args.offline, reranker=reranker)
+            records.append(r)
+            print(f"  {g['id']:4} {g['kind']:12} route={r['route']:12} recall@5={r['recall'].get('5')} facts={r['facts']} {'HARD FAIL' if r['hard_fail'] else ''}", flush=True)
+    except KeyboardInterrupt:
+        # Ctrl+C, or credit running out mid-run, used to lose every finished
+        # question. Write what completed, marked partial, and say so.
+        interrupted = True
+        print(f"\ninterrupted after {len(records)} of {len(golden)} questions; writing the partial table", file=sys.stderr)
+    if not records:
+        return 130 if interrupted else 1
     agg = aggregate_scores(records)
     table = render(records, agg, offline=args.offline, contract=args.contract, embedding=args.embedding, rerank=args.rerank)
+    if interrupted:
+        table = table.replace("\n", f" · PARTIAL: {len(records)} of {len(golden)} questions\n", 1)
     stamp += "" if args.rerank == "none" else f"-rerank-{args.rerank}"
+    stamp += "-partial" if interrupted else ""
     print("\n" + table)
     (out / f"{stamp}.md").write_text(table + "\n", encoding="utf-8")
     (out / f"{stamp}.json").write_text(json.dumps({"generated": datetime.now(timezone.utc).isoformat(timespec="seconds"), "offline": args.offline,
-                                                   "contract": args.contract, "embedding": args.embedding, "model": MODEL, "aggregate": agg, "records": records},
+                                                   "contract": args.contract, "embedding": args.embedding, "model": MODEL,
+                                                   "completed": len(records), "planned": len(golden), "partial": interrupted,
+                                                   "aggregate": agg, "records": records},
                                                   indent=1, default=str), encoding="utf-8")
     print(f"wrote {out / (stamp + '.md')} and .json")
+    if interrupted:
+        return 130
     return 1 if agg["hard_fails"] else 0
 
 
