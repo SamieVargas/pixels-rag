@@ -147,7 +147,10 @@ against `fixtures/days.json`, a seeded synthetic export with the real
 export's shape and a few planted days, since the real data stays off the
 repo (see `docs/decisions.md`). `python evals/run.py --offline` scores
 retrieval with the golden plans and no key; the keyed run lets the router
-decide and scores the answers.
+decide and scores the answers. A run stopped by Ctrl+C, or by credit running
+out, still writes the questions that finished, to a `-partial` file with the
+count in its header and exit code 130, so a twenty-run ablation that dies at
+run fourteen keeps its fourteen runs.
 
 Offline, with the default local embedder (all-MiniLM-L6-v2), 2026-09-22:
 

@@ -219,6 +219,57 @@ def main():
         code = run.main(["--offline", "--ablation", "--ablation-runs", "1", "--only", "S06,S01", "--embedding", "hash", "--out", tmp])
         check("ablation offline writes an ablation table", code == 0 and any("ablation" in f for f in os.listdir(tmp)))
 
+    print("runner writes the partial table when a keyed run is interrupted")
+
+    class Interrupting(FakeClient):
+        """Answers like the stub for `after` calls, then raises the way Ctrl+C does."""
+
+        def __init__(self, replies, after):
+            super().__init__(replies)
+            self.after = after
+
+        def create(self, **kwargs):
+            if len(self.requests) >= self.after:
+                raise KeyboardInterrupt
+            return super().create(**kwargs)
+
+    f02 = next(g for g in golden if g["id"] == "F02")
+    with tempfile.TemporaryDirectory() as tmp:
+        stub = Interrupting([f02["plan"], answer("Those are the hot yoga days.", f02["expected_dates"][:1])], after=2)
+        code = run.main(["--only", "F02,F03", "--embedding", "hash", "--out", tmp], client=stub)
+        files = os.listdir(tmp)
+        check("exit 130", code == 130)
+        check("wrote a -partial .md and .json, nothing else", sorted(files) == sorted([f"{date.today().isoformat()}-partial.md", f"{date.today().isoformat()}-partial.json"]))
+        md = Path(tmp, f"{date.today().isoformat()}-partial.md").read_text(encoding="utf-8")
+        check("the header says PARTIAL: 1 of 2 questions", "PARTIAL: 1 of 2 questions" in md.splitlines()[0])
+        data = json.loads(Path(tmp, f"{date.today().isoformat()}-partial.json").read_text(encoding="utf-8"))
+        check("the json records completed, planned, partial", (data["completed"], data["planned"], data["partial"]) == (1, 2, True))
+        check("the finished question is the one recorded", [r["id"] for r in data["records"]] == ["F02"])
+
+    print("runner writes the partial ablation when an arm is interrupted")
+    real = run._ablation_question
+    seen = {"n": 0}
+
+    def three_then_interrupt(*a, **k):
+        seen["n"] += 1
+        if seen["n"] > 3:
+            raise KeyboardInterrupt
+        return real(*a, **k)
+
+    with tempfile.TemporaryDirectory() as tmp:
+        run._ablation_question = three_then_interrupt
+        try:
+            code = run.main(["--offline", "--ablation", "--ablation-runs", "2", "--only", "S06,S01", "--embedding", "hash", "--out", tmp])
+        finally:
+            run._ablation_question = real
+        files = os.listdir(tmp)
+        check("exit 130 and an -ablation-partial pair", code == 130 and any(f.endswith("-offline-ablation-partial.md") for f in files) and any(f.endswith("-offline-ablation-partial.json") for f in files))
+        md = Path(tmp, next(f for f in files if f.endswith(".md"))).read_text(encoding="utf-8")
+        check("the header says PARTIAL: 3 of 8 runs", "PARTIAL: 3 of 8 runs" in md.splitlines()[0])
+        check("arm B, never reached, reads n/a", "| Recall@5 (expected days covered) |" in md and md.count("n/a") >= 1)
+        data = json.loads(Path(tmp, next(f for f in files if f.endswith(".json"))).read_text(encoding="utf-8"))
+        check("only arm A has rows", list(data["arms"]) == ["A"] and len(data["arms"]["A"]["rows"]) == 3 and data["partial"] is True)
+
     print()
     if FAILS:
         print(f"{len(FAILS)} FAILED: " + ", ".join(FAILS))
