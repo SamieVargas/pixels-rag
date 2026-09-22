@@ -205,9 +205,19 @@ indexed day, the newest day at the source, how many logged days the index is
 behind, and the version stamp. A living index is the difference between a
 demo and a tool you open on a Tuesday.
 
+### Data quality at the door
+
+Every ingest validates the rows first and writes the report to
+`evals/results/ingest-<date>.md`. A duplicate date, or a date that does not
+parse, fails the ingest before anything is written. Missing days in the
+range, values outside each field's range (a sleep score of 140, a resting
+heart rate of 20), and days whose chunk holds nothing beyond the date and the
+rating are warnings, counted in the report and listed by day. `--stats`
+shows the same report without touching the index. On the fixture the report
+is clean apart from its five deliberately unlogged days.
+
 ### What v2 does not do yet
 
-Parts 6 to 12 of the plan: a validation report on ingest, reranking and
-embedding-model ablations, the headline finding reproduced deterministically, query
+Parts 7 to 12 of the plan: reranking and embedding-model ablations, the headline finding reproduced deterministically, query
 rewriting for follow-ups, a privacy page with `--explain`, and a local MCP
 server. Each lands on its own PR with its own number.

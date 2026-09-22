@@ -29,6 +29,7 @@ from chunk import row_to_chunk
 from core import index as I
 from core import store
 from core.aggregate import render_table
+from core.quality import IngestError, render_report, validate_rows
 from core.days import normalize_rows
 from ingest import fetch_pixels_data
 
@@ -50,8 +51,10 @@ def show_dry_run(rows: list[dict], n: int = 3) -> None:
 
 
 def show_stats(rows: list[dict], days: int) -> None:
+    """Corpus stats plus the validation report the ingest would apply."""
     ratings = [r.get("ratingNum", 0) for r in rows if r.get("ratingNum", 0) > 0]
     avg_rating = sum(ratings) / len(ratings) if ratings else 0
+    report = validate_rows(rows)
     table = Table(title="Life in Pixels — corpus stats", show_header=False)
     table.add_column("Metric", style="bold cyan")
     table.add_column("Value")
@@ -62,20 +65,40 @@ def show_stats(rows: list[dict], days: int) -> None:
         dates = sorted(r["date"] for r in rows)
         table.add_row("Date range", f"{dates[0]} → {dates[-1]}")
     table.add_row("Average rating", f"{avg_rating:.2f} / 5")
+    table.add_row("Validation", "[green]OK[/green]" if report["ok"] else f"[red]{len(report['errors'])} error(s), ingest would refuse[/red]")
+    for k in ("missing_day", "out_of_range", "not_a_number", "empty_day"):
+        table.add_row(f"  {k.replace('_', ' ')}", str(report["warning_counts"].get(k, 0)))
     console.print(table)
+    for e in report["errors"]:
+        console.print(f"  [red]- {e['date']}: {e['detail']}[/red]")
+    for w in report["warnings"][:15]:
+        console.print(f"  [dim]- {w['date']}: {w['detail']}[/dim]")
+    if len(report["warnings"]) > 15:
+        console.print(f"  [dim]({len(report['warnings']) - 15} more in the ingest report)[/dim]")
 
 
 def rebuild(db: Path, source: str, days: int) -> None:
     console.print(f"[bold]Loading {source} data...[/bold]")
     rows = load_rows(source, days)
     console.print("[bold]Building the index...[/bold]")
-    _, recs = store.rebuild(db, rows)
+    try:
+        _, recs = store.rebuild(db, rows)
+    except IngestError as e:
+        console.print(f"[red]Ingest refused: {e}[/red]")
+        sys.exit(1)
     console.print(f"[green]Index built: {len(recs)} days indexed at {db}[/green]")
 
 
 def ingest_since(db: Path, source: str, since: str) -> None:
     rows = [r for r in load_rows(source, store.since_days(since)) if str(r["date"]) >= since]
-    report = store.ingest(db, rows)
+    try:
+        report = store.ingest(db, rows)
+    except IngestError as e:
+        console.print(f"[red]Ingest refused: {e}[/red]")
+        sys.exit(1)
+    q = report["quality"]
+    if q["warnings"]:
+        console.print(f"[yellow]{len(q['warnings'])} warning(s) in the ingest report: {q['warning_counts']}[/yellow]")
     if report["rebuilt"]:
         console.print("[yellow]Index rebuilt from scratch:[/yellow] " + ("; ".join(report["reasons"]) or "no index existed"))
     console.print(f"[green]Ingested {report['upserted']} days since {since}: {report['new']} new, {report['updated']} updated[/green]")

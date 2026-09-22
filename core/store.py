@@ -10,6 +10,7 @@ from pathlib import Path
 
 from core import index as I
 from core.days import normalize_rows
+from core.quality import IngestError, render_report, validate_rows
 
 # Bump when chunk.py's template changes meaning; the hash below catches edits
 # nobody bumped for.
@@ -49,8 +50,23 @@ def version_mismatch(collection, embedding_model: str = EMBEDDING_MODEL) -> list
     return [f"{k}: index has {md.get(k)!r}, code has {v!r}" for k, v in want.items() if md.get(k) != v]
 
 
-def rebuild(db: Path, rows: list[dict], *, embedding_function=None, embedding_model: str = EMBEDDING_MODEL):
-    """Full build from `rows`, stamped. Returns (collection, day records)."""
+REPORT_DIR = Path(__file__).resolve().parent.parent / "evals" / "results"
+
+
+def check_rows(rows: list[dict], report_dir=REPORT_DIR) -> dict:
+    """Validate, write the report beside the eval results, and refuse on errors."""
+    report = validate_rows(rows)
+    if report_dir:
+        Path(report_dir).mkdir(parents=True, exist_ok=True)
+        (Path(report_dir) / f"ingest-{date.today().isoformat()}.md").write_text(render_report(report), encoding="utf-8")
+    if not report["ok"]:
+        raise IngestError(report)
+    return report
+
+
+def rebuild(db: Path, rows: list[dict], *, embedding_function=None, embedding_model: str = EMBEDDING_MODEL, report_dir=REPORT_DIR):
+    """Full build from `rows`, validated and stamped. Returns (collection, day records)."""
+    check_rows(rows, report_dir)
     days = normalize_rows(rows)
     write_rows(db, rows)
     client = I.make_client(str(db))
@@ -58,10 +74,12 @@ def rebuild(db: Path, rows: list[dict], *, embedding_function=None, embedding_mo
     return coll, days
 
 
-def ingest(db: Path, new_rows: list[dict], *, embedding_function=None, embedding_model: str = EMBEDDING_MODEL) -> dict:
+def ingest(db: Path, new_rows: list[dict], *, embedding_function=None, embedding_model: str = EMBEDDING_MODEL, report_dir=REPORT_DIR) -> dict:
     """Upsert `new_rows` into the index by date. Idempotent: the same rows
-    twice leave the same index. A version mismatch rebuilds everything."""
+    twice leave the same index. A version mismatch rebuilds everything.
+    Duplicate dates in the batch fail the ingest before anything is written."""
     db = Path(db)
+    quality = check_rows(new_rows, report_dir)
     existing = {r["date"]: r for r in read_rows(db)}
     client = I.make_client(str(db))
     try:
@@ -73,8 +91,8 @@ def ingest(db: Path, new_rows: list[dict], *, embedding_function=None, embedding
         report["reasons"] = version_mismatch(coll, embedding_model)
     if coll is None or report["reasons"]:
         merged = {**existing, **{r["date"]: r for r in new_rows}}
-        coll, _ = rebuild(db, list(merged.values()), embedding_function=embedding_function, embedding_model=embedding_model)
-        report.update(rebuilt=True, upserted=len(merged), new=len([d for d in merged if d not in existing]), updated=len([d for d in new_rows if r_date(d) in existing]))
+        coll, _ = rebuild(db, list(merged.values()), embedding_function=embedding_function, embedding_model=embedding_model, report_dir=None)
+        report.update(rebuilt=True, upserted=len(merged), new=len([d for d in merged if d not in existing]), updated=len([d for d in new_rows if r_date(d) in existing]), quality=quality)
         return report
     days = normalize_rows(new_rows)
     if days:
@@ -87,6 +105,7 @@ def ingest(db: Path, new_rows: list[dict], *, embedding_function=None, embedding
             report["new"] += 1
         existing[key] = r
     report["upserted"] = len(days)
+    report["quality"] = quality
     write_rows(db, list(existing.values()))
     return report
 

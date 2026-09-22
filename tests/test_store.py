@@ -32,7 +32,7 @@ def main():
     with tempfile.TemporaryDirectory() as tmp:
         db = Path(tmp) / "db"
         print("first ingest builds and stamps")
-        rep = store.ingest(db, ROWS[:100], embedding_function=EF, embedding_model="hash-test")
+        rep = store.ingest(db, ROWS[:100], embedding_function=EF, embedding_model="hash-test", report_dir=None)
         coll = I.load(I.make_client(str(db)), embedding_function=EF)
         check("no index yet means a full build", rep["rebuilt"] and rep["upserted"] == 100 and coll.count() == 100)
         md = coll.metadata or {}
@@ -40,17 +40,17 @@ def main():
               and md.get("chunk_template_hash") == store.chunk_template_hash() and md.get("embedding_model") == "hash-test")
 
         print("re-running the same rows changes nothing")
-        rep = store.ingest(db, ROWS[:100], embedding_function=EF, embedding_model="hash-test")
+        rep = store.ingest(db, ROWS[:100], embedding_function=EF, embedding_model="hash-test", report_dir=None)
         coll = I.load(I.make_client(str(db)), embedding_function=EF)
         check("upsert is idempotent: same count, nothing rebuilt", not rep["rebuilt"] and coll.count() == 100 and rep["updated"] == 100 and rep["new"] == 0)
         check("days.json holds one row per date", len(store.read_rows(db)) == 100)
 
         print("new days are added by upsert")
-        rep = store.ingest(db, ROWS[100:], embedding_function=EF, embedding_model="hash-test")
+        rep = store.ingest(db, ROWS[100:], embedding_function=EF, embedding_model="hash-test", report_dir=None)
         coll = I.load(I.make_client(str(db)), embedding_function=EF)
         check("the tail was appended", rep["new"] == len(ROWS) - 100 and coll.count() == len(ROWS))
         edited = dict(ROWS[0]); edited["mood"] = "Elated"
-        store.ingest(db, [edited], embedding_function=EF, embedding_model="hash-test")
+        store.ingest(db, [edited], embedding_function=EF, embedding_model="hash-test", report_dir=None)
         got = I.load(I.make_client(str(db)), embedding_function=EF).get(ids=[edited["date"]], include=["metadatas"])
         check("an edited day replaces its chunk in place", got["metadatas"][0]["mood"] == "Elated" and I.load(I.make_client(str(db)), embedding_function=EF).count() == len(ROWS))
 
@@ -67,11 +67,11 @@ def main():
         try:
             st = store.status(db, None, embedding_function=EF, embedding_model="hash-test")
             check("status names the mismatch", any("chunk_template_version" in m for m in st["mismatch"]))
-            rep = store.ingest(db, ROWS[-3:], embedding_function=EF, embedding_model="hash-test")
+            rep = store.ingest(db, ROWS[-3:], embedding_function=EF, embedding_model="hash-test", report_dir=None)
             coll = I.load(I.make_client(str(db)), embedding_function=EF)
             check("ingest rebuilds everything and says why", rep["rebuilt"] and any("chunk_template_version" in r for r in rep["reasons"]) and coll.count() == len(ROWS))
             check("the rebuilt collection carries the current stamp", (coll.metadata or {}).get("chunk_template_version") == "day@v2-test")
-            check("a second ingest after the rebuild is quiet again", not store.ingest(db, ROWS[-1:], embedding_function=EF, embedding_model="hash-test")["rebuilt"])
+            check("a second ingest after the rebuild is quiet again", not store.ingest(db, ROWS[-1:], embedding_function=EF, embedding_model="hash-test", report_dir=None)["rebuilt"])
         finally:
             store.CHUNK_TEMPLATE_VERSION = saved
         st = store.status(db, None, embedding_function=EF, embedding_model="other-model")
