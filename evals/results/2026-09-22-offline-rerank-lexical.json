@@ -1,0 +1,63 @@
+{
+ "generated": "2026-09-22T04:58:34+00:00",
+ "reranker": "lexical",
+ "embedding": "default",
+ "rows": [
+  {
+   "id": "S01",
+   "plain": 1.0,
+   "reranked": 1.0,
+   "plain_ms": 225,
+   "reranked_ms": 204,
+   "rerank_only_ms": 0
+  },
+  {
+   "id": "S02",
+   "plain": 1.0,
+   "reranked": 1.0,
+   "plain_ms": 198,
+   "reranked_ms": 258,
+   "rerank_only_ms": 0
+  },
+  {
+   "id": "S03",
+   "plain": 0.5,
+   "reranked": 0.5,
+   "plain_ms": 226,
+   "reranked_ms": 232,
+   "rerank_only_ms": 0
+  },
+  {
+   "id": "S04",
+   "plain": 1.0,
+   "reranked": 1.0,
+   "plain_ms": 203,
+   "reranked_ms": 202,
+   "rerank_only_ms": 0
+  },
+  {
+   "id": "S05",
+   "plain": 1.0,
+   "reranked": 1.0,
+   "plain_ms": 277,
+   "reranked_ms": 254,
+   "rerank_only_ms": 0
+  },
+  {
+   "id": "S06",
+   "plain": 0.7143,
+   "reranked": 0.7143,
+   "plain_ms": 243,
+   "reranked_ms": 220,
+   "rerank_only_ms": 0
+  },
+  {
+   "id": "S07",
+   "plain": 1.0,
+   "reranked": 1.0,
+   "plain_ms": 214,
+   "reranked_ms": 203,
+   "rerank_only_ms": 0
+  }
+ ]
+}

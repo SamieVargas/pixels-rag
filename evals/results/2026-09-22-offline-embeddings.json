@@ -1,0 +1,32 @@
+{
+ "generated": "2026-09-22T04:59:57+00:00",
+ "rows": [
+  {
+   "arm": "minilm",
+   "model": "all-MiniLM-L6-v2",
+   "ran": true,
+   "build_s": 3.85,
+   "recall5": 0.8878,
+   "query_ms": 210.4,
+   "n": 7
+  },
+  {
+   "arm": "bge-small",
+   "model": "BAAI/bge-small-en-v1.5",
+   "ran": false,
+   "reason": "bge-small needs pip install sentence-transformers, and the model download (ValueError: The sentence_transformers python package is not installed. Please install it wit)"
+  },
+  {
+   "arm": "e5-small",
+   "model": "intfloat/e5-small-v2",
+   "ran": false,
+   "reason": "e5-small needs pip install sentence-transformers, and the model download (ValueError: The sentence_transformers python package is not installed. Please install it wit)"
+  },
+  {
+   "arm": "openai",
+   "model": "text-embedding-3-small",
+   "ran": false,
+   "reason": "openai needs pip install openai and OPENAI_API_KEY; sends every chunk's text to OpenAI"
+  }
+ ]
+}

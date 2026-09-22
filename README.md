@@ -88,3 +88,220 @@ python main.py "What's different about my 5-star days vs my 1-2 star days?"
 | `query.py`        | Retrieve top-k → generate cited answer with Claude          |
 | `main.py`         | CLI entry point                                             |
 | `chroma_db/`      | Local vector store — git-ignored, rebuilt on demand         |
+
+## v2: retrieval you can measure, and a router that knows when retrieval is the wrong tool
+
+Everything above still holds and still runs (`--v1`). What v1 could not say
+is whether retrieval is any good, whether the citations are real, or what
+happens to "what was my average sleep on hot yoga days", which no amount of
+similarity search answers correctly. v2 adds those three things.
+
+### The router
+
+```
+question
+  └─ router · one Haiku call under a JSON Schema · kind, fields, operators, the date words
+       ├─ semantic      dense search over day chunks, restricted to the days the filters and dates allow
+       ├─ filter        the matching days, decided in code; the model summarizes them
+       ├─ aggregate     pandas computes the statistic; the model narrates the table and nothing else
+       └─ unanswerable  an admission, no model call
+```
+
+The model does the part that needs language and code does the part that
+needs to be right. Relative dates never reach the model as a problem to
+solve: the router copies the date words from the question ("the first two
+weeks of June", "last two weeks") and `core/dates.py` resolves them against
+the newest logged day, so a question means the same thing on every run.
+Filters run in `core/filters.py` over the day records, and the dense search
+is told which ids it may return. An aggregate question never touches the
+index. Every query logs its route.
+
+### The answer contract
+
+```jsonc
+{ "answer": "string",
+  "claims": [ { "text": "string", "dates": ["YYYY-MM-DD"] } ],
+  "cited_dates": ["YYYY-MM-DD"],
+  "unanswerable": false,
+  "why_unanswerable": "string or null" }
+```
+
+The prompt asks for citations; `core/validate.py` enforces them. A cited date
+has to be one the pipeline retrieved. A claim has to name at least one date
+unless the answer is an admission. Every number in the answer has to appear
+in a cited day's text, in the question, or in the computed table, because
+numbers are what the model is most tempted to invent about a time series.
+A failure goes back to the model once, with the violations as the next user
+turn, and the CLI prints the retrieved-but-uncited and cited-but-unretrieved
+counts on every answer. Structured output (`output_config.format` with the
+schema) is the default contract; `--contract prompt` runs the same shape
+through the prompt and the fence-stripping parser, and the pipeline records
+which path handled each reply.
+
+### Evals
+
+`evals/golden.jsonl` holds 28 questions across the four kinds, written before
+any retrieval run: seven semantic, seven filter, seven aggregate, five
+unanswerable, plus two follow-ups that wait for Part 10. They are written
+against `fixtures/days.json`, a seeded synthetic export with the real
+export's shape and a few planted days, since the real data stays off the
+repo (see `docs/decisions.md`). `python evals/run.py --offline` scores
+retrieval with the golden plans and no key; the keyed run lets the router
+decide and scores the answers.
+
+Offline, with the default local embedder (all-MiniLM-L6-v2), 2026-09-22:
+
+| Measure | Result |
+| --- | --- |
+| Semantic recall@3 / @5 / @10 | 63% / 89% / 93% · MRR 0.71 |
+| Filter: matched set equals the expected set | 100% of 7 |
+| Route accuracy, facts in the answer, citation validity, abstention | pending a keyed run |
+
+Three semantic questions carry the misses. S03 asks what recovery looked like
+the day after the trail run: the run day is found and the morning after is
+not, because "the day after" is adjacency, which similarity cannot express.
+S04 finds the severe-anxiety day at rank five. S06 asks about a whole week
+and five of its seven days make the top five, which is the case the chunking
+ablation was built for.
+
+Chunk granularity, offline, one run per arm (retrieval is deterministic
+without a key, so one run is the whole story; the twenty-run arms measure
+the answer's fact coverage and need a key):
+
+| Measure | A · day chunks | B · day + week rollups |
+| --- | --- | --- |
+| Recall@5 | 89% | 93% |
+| S06, the week question | 71% | 100% |
+| Week chunks retrieved | 0 | 14 |
+
+The rollup lifts the week question and changes nothing else. That is a
+narrower claim than "chunk design is the lever", and it is the one the data
+supports so far.
+
+### Running v2
+
+```bash
+pip install -r requirements.txt
+python main.py --source fixture --rebuild           # index the synthetic days
+python main.py "Did I sleep better on hot yoga days?"
+python main.py "Which days was my sleep score under 60?"
+python main.py --rebuild                             # your export, via .env
+python evals/run.py --offline                        # retrieval only, no key
+python evals/run.py                                  # the router and the answers, needs ANTHROPIC_API_KEY
+python evals/run.py --ablation                       # day vs day+week, 20 runs per arm
+python tests/test_core.py                            # everything, no key, no model download
+```
+
+### An index that stays current
+
+v1 was a one-shot export. `python main.py --since 2026-08-01` reads the days
+logged since a date and upserts them by `id = date`, so running it twice
+leaves the same index, and an edited day replaces its chunk in place. The
+collection records the chunk template version, a hash of `chunk.py`, and the
+embedding model that built it; when the code disagrees with any of the three,
+the next ingest rebuilds the whole index and says why, rather than mixing two
+chunk formats in one store. `python main.py --status` prints the newest
+indexed day, the newest day at the source, how many logged days the index is
+behind, and the version stamp. A living index is the difference between a
+demo and a tool you open on a Tuesday.
+
+### Data quality at the door
+
+Every ingest validates the rows first and writes the report to
+`evals/results/ingest-<date>.md`. A duplicate date, or a date that does not
+parse, fails the ingest before anything is written. Missing days in the
+range, values outside each field's range (a sleep score of 140, a resting
+heart rate of 20), and days whose chunk holds nothing beyond the date and the
+rating are warnings, counted in the report and listed by day. `--stats`
+shows the same report without touching the index. On the fixture the report
+is clean apart from its five deliberately unlogged days.
+
+### Reranking, measured
+
+`--rerank cross-encoder` retrieves the top 20 and lets a local cross-encoder
+(MS MARCO MiniLM from sentence-transformers, nothing leaves the machine) keep
+the top k. `--rerank lexical` is a token-overlap baseline that needs no model,
+there so the wiring can be tested and run anywhere. Both are off by default,
+and `python evals/run.py --offline --rerank-compare --rerank <name>` writes
+the comparison against plain top-k on the semantic questions.
+
+| Reranker | Recall@5 plain | Recall@5 reranked | Added ms per question |
+| --- | --- | --- | --- |
+| lexical (offline, 2026-09-22) | 89% | 89% | 0 |
+| cross-encoder | pending: needs `pip install sentence-transformers` and the model download | | |
+
+The lexical baseline changes nothing, which is a tie and is reported as one.
+The three semantic misses are adjacency (S03) and a whole week (S06), which
+reordering the candidates does not repair. The cross-encoder row is the one
+that decides whether the flag earns a default; if its gain is under a few
+points it stays off.
+
+### The embedding model, decided with data and with a privacy line
+
+`python evals/run.py --offline --embedding-ablation` builds one index per
+arm and runs the semantic questions through each: recall@5, index build
+time, query latency. Three local arms and one API arm.
+
+| Arm | Model | Recall@5 | Index build | Query latency |
+| --- | --- | --- | --- | --- |
+| minilm (default) | all-MiniLM-L6-v2 | 89% | 3.9 s | 210 ms |
+| bge-small | BAAI/bge-small-en-v1.5 | pending: `pip install sentence-transformers` and the model download | | |
+| e5-small | intfloat/e5-small-v2 | pending: same | | |
+| openai (opt-in) | text-embedding-3-small | pending: `OPENAI_API_KEY` | | |
+
+The `openai` arm sends every chunk's text to OpenAI, which is why it is off
+unless asked for and why the default stays local whatever its number turns
+out to be. Arms that cannot run say so in the table rather than failing the
+run.
+
+### The headline finding, reproduced deterministically
+
+The finding this project has been quoted on, that hot yoga plus walking beat
+everything else for sleep and recovery, came from asking the model.
+`python analysis/recovery.py` computes it from the day records instead:
+mean sleep score and body battery on the habit's days against all other
+days, n per group, a seeded bootstrap interval on the difference, and the
+same the morning after. The fixture plants that pattern, so on the fixture
+the table confirms the code rather than the finding; the real-data table is
+`python analysis/recovery.py --days chroma_db/days.json` and lands beside
+the eval results.
+
+| Habit | Metric | n | Same day | Others | Diff [95% CI] |
+| --- | --- | --- | --- | --- | --- |
+| hot yoga + walking | sleep score | 9 | 70.4 | 62.4 | +8.0 [+2.2, +13.6] |
+| hot yoga + walking | body battery | 9 | 58.6 | 44.4 | +14.2 [+3.3, +22.8] |
+| meditation | sleep score | 59 | 63.2 | 62.9 | +0.3 [-3.3, +3.9] |
+| sunlight | body battery | 71 | 46.7 | 43.5 | +3.2 [-1.7, +8.2] |
+
+The full table, every habit with the next-day columns, is in
+`evals/results/recovery-<date>.md`. Where the model's answer and this table
+agree, the story is that the model surfaced it and the aggregation confirmed
+it. Where they disagree, that is the better story, and the reason Part 3
+routes aggregation questions away from retrieval.
+
+### Follow-ups and query rewriting
+
+`python main.py --chat` keeps the last three turns. Before anything is
+retrieved, the router sees them and rewrites a follow-up ("and on hot yoga
+days?", "only in June?") into a standalone question, which is the
+`rewritten_query` field of its contract; the filters, dates and aggregate
+spec are filled as if the full question had been asked. The two follow-up
+questions in the golden set score this: `python evals/run.py --followups`
+asks each one with its prior turn in history and alone, and reports whether
+the route and the plan equal the golden plan under each arm. That table needs
+a key, since the rewriting is the router's, and reads pending until then.
+
+### What leaves the machine
+
+`docs/PRIVACY.md` is one page: the data stays in the local ChromaDB; a
+question sends only the retrieved day chunks, or the computed table, to the
+model provider; the logs carry dates, scores, routes and usage and never the
+text; the embedding API arm is off by default and says what it sends.
+`python main.py --explain "..."` prints, for each retrieved chunk, its
+score, which filters matched, whether it sat in the date range and whether
+the answer cited it, with the route, the resolved plan and the validator's
+outcome, so any answer can be audited in ten seconds.
+
+### What v2 does not do yet
+
+Part 12 of the plan, the local MCP server, lands on its own PR.
