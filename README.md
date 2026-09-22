@@ -236,8 +236,26 @@ reordering the candidates does not repair. The cross-encoder row is the one
 that decides whether the flag earns a default; if its gain is under a few
 points it stays off.
 
+### The embedding model, decided with data and with a privacy line
+
+`python evals/run.py --offline --embedding-ablation` builds one index per
+arm and runs the semantic questions through each: recall@5, index build
+time, query latency. Three local arms and one API arm.
+
+| Arm | Model | Recall@5 | Index build | Query latency |
+| --- | --- | --- | --- | --- |
+| minilm (default) | all-MiniLM-L6-v2 | 89% | 3.9 s | 210 ms |
+| bge-small | BAAI/bge-small-en-v1.5 | pending: `pip install sentence-transformers` and the model download | | |
+| e5-small | intfloat/e5-small-v2 | pending: same | | |
+| openai (opt-in) | text-embedding-3-small | pending: `OPENAI_API_KEY` | | |
+
+The `openai` arm sends every chunk's text to OpenAI, which is why it is off
+unless asked for and why the default stays local whatever its number turns
+out to be. Arms that cannot run say so in the table rather than failing the
+run.
+
 ### What v2 does not do yet
 
-Parts 8 to 12 of the plan: the embedding-model ablation, the headline finding reproduced deterministically, query
+Parts 9 to 12 of the plan: the headline finding reproduced deterministically, query
 rewriting for follow-ups, a privacy page with `--explain`, and a local MCP
 server. Each lands on its own PR with its own number.

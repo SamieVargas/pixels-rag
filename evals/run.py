@@ -25,6 +25,7 @@ sys.path.insert(0, str(ROOT))
 
 from core import index as I  # noqa: E402
 from core.contracts import MODEL  # noqa: E402
+from core.embeddings import ARMS, DEFAULT as DEFAULT_ARM, run_arm  # noqa: E402
 from core.days import load_days, latest_date  # noqa: E402
 from core.pipeline import ask, gather  # noqa: E402
 from core.rerank import make_reranker  # noqa: E402
@@ -236,6 +237,24 @@ def run_rerank_compare(golden, *, days, collection, top_k, reranker_name):
     return "\n".join(lines), rows
 
 
+def run_embedding_ablation(golden, *, days, arms, top_k):
+    """One index per embedding model, the semantic questions through each,
+    retrieval only. Arms that cannot run here say why."""
+    sem = [g for g in golden if g["kind"] == "semantic"]
+    today = latest_date(days)
+    qs = [(g["question"], resolve(g["plan"], today), g["expected_dates"]) for g in sem]
+    rows = [run_arm(a, days=days, questions=qs, score=score_retrieval, top_k=top_k) for a in arms]
+    lines = [f"# Embedding models · {date.today().isoformat()} · {len(sem)} semantic questions · retrieval only", "",
+             "The default stays local whatever the numbers say. The `openai` arm sends every chunk's text to OpenAI and is opt-in.", "",
+             "| Arm | Model | Recall@5 | Index build | Query latency |", "| --- | --- | --- | --- | --- |"]
+    for r in rows:
+        if r["ran"]:
+            lines.append(f"| {r['arm']}{' (default)' if r['arm'] == DEFAULT_ARM else ''} | `{r['model']}` | {pct(r['recall5'])} | {r['build_s']} s | {r['query_ms']} ms |")
+        else:
+            lines.append(f"| {r['arm']} | `{r['model']}` | not run | | {r['reason']} |")
+    return "\n".join(lines), rows
+
+
 def main(argv=None, client=None):
     p = argparse.ArgumentParser(description="pixels-rag retrieval evals")
     p.add_argument("--golden", default=str(ROOT / "evals" / "golden.jsonl"))
@@ -249,6 +268,8 @@ def main(argv=None, client=None):
     p.add_argument("--ablation-runs", type=int, default=ABLATION_RUNS)
     p.add_argument("--rerank", choices=("none", "lexical", "cross-encoder"), default="none", help="rerank the top 20 to top-k before answering")
     p.add_argument("--rerank-compare", action="store_true", help="plain top-k against reranked, semantic questions, retrieval only")
+    p.add_argument("--embedding-ablation", action="store_true", help="one index per embedding model, semantic questions, retrieval only")
+    p.add_argument("--arms", default="minilm,bge-small,e5-small,openai", help="comma-separated arms for --embedding-ablation")
     p.add_argument("--out", default=str(ROOT / "evals" / "results"))
     args = p.parse_args(argv)
 
@@ -267,6 +288,15 @@ def main(argv=None, client=None):
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     stamp = date.today().isoformat() + ("-offline" if args.offline else "")
+
+    if args.embedding_ablation:
+        arms = [a.strip() for a in args.arms.split(",") if a.strip()]
+        table, rows = run_embedding_ablation(golden, days=days, arms=arms, top_k=args.top_k)
+        print("\n" + table)
+        (out / f"{stamp}-embeddings.md").write_text(table + "\n", encoding="utf-8")
+        (out / f"{stamp}-embeddings.json").write_text(json.dumps({"generated": datetime.now(timezone.utc).isoformat(timespec="seconds"), "rows": rows}, indent=1), encoding="utf-8")
+        print(f"wrote {out / (stamp + '-embeddings.md')} and .json")
+        return 0
 
     if args.ablation:
         table, arms = run_ablation(golden, days=days, client=client, contract=args.contract, top_k=args.top_k, offline=args.offline,
