@@ -39,7 +39,15 @@
   "retries": 0,
   "parse_paths": {},
   "mean_tokens": null,
-  "mean_latency_ms": 54.0385
+  "mean_latency_ms": 54.0385,
+  "cost": {
+   "per_question": 0.0,
+   "total": 0.0,
+   "priced": 0,
+   "model": null,
+   "prices_read_on": "2026-09-23",
+   "note": "offline: no model call was made, so nothing was billed"
+  }
  },
  "records": [
   {
@@ -74,7 +82,8 @@
     "10": 1.0
    },
    "mrr": 0.5,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.0
   },
   {
    "id": "S02",
@@ -101,7 +110,8 @@
     "10": 1.0
    },
    "mrr": 1.0,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.0
   },
   {
    "id": "S03",
@@ -135,7 +145,8 @@
     "10": 0.5
    },
    "mrr": 0.25,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.0
   },
   {
    "id": "S04",
@@ -169,7 +180,8 @@
     "10": 1.0
    },
    "mrr": 0.2,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.0
   },
   {
    "id": "S05",
@@ -196,7 +208,8 @@
     "10": 1.0
    },
    "mrr": 1.0,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.0
   },
   {
    "id": "S06",
@@ -229,7 +242,8 @@
     "10": 1.0
    },
    "mrr": 1.0,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.0
   },
   {
    "id": "S07",
@@ -263,7 +277,8 @@
     "10": 1.0
    },
    "mrr": 1.0,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.0
   },
   {
    "id": "F01",
@@ -333,7 +348,8 @@
     "10": 0.2273
    },
    "mrr": 1.0,
-   "exact": true
+   "exact": true,
+   "cost_usd": 0.0
   },
   {
    "id": "F02",
@@ -367,7 +383,8 @@
     "10": 1.0
    },
    "mrr": 1.0,
-   "exact": true
+   "exact": true,
+   "cost_usd": 0.0
   },
   {
    "id": "F03",
@@ -397,7 +414,8 @@
     "10": 1.0
    },
    "mrr": 1.0,
-   "exact": true
+   "exact": true,
+   "cost_usd": 0.0
   },
   {
    "id": "F04",
@@ -445,7 +463,8 @@
     "10": 0.4545
    },
    "mrr": 1.0,
-   "exact": true
+   "exact": true,
+   "cost_usd": 0.0
   },
   {
    "id": "F05",
@@ -472,7 +491,8 @@
     "10": 1.0
    },
    "mrr": 1.0,
-   "exact": true
+   "exact": true,
+   "cost_usd": 0.0
   },
   {
    "id": "F06",
@@ -506,7 +526,8 @@
     "10": 1.0
    },
    "mrr": 1.0,
-   "exact": true
+   "exact": true,
+   "cost_usd": 0.0
   },
   {
    "id": "F07",
@@ -534,7 +555,8 @@
     "10": 1.0
    },
    "mrr": 1.0,
-   "exact": true
+   "exact": true,
+   "cost_usd": 0.0
   },
   {
    "id": "A01",
@@ -584,7 +606,8 @@
    "answer": null,
    "recall": {},
    "mrr": null,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.0
   },
   {
    "id": "A02",
@@ -724,7 +747,8 @@
    "answer": null,
    "recall": {},
    "mrr": null,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.0
   },
   {
    "id": "A03",
@@ -759,7 +783,8 @@
    "answer": null,
    "recall": {},
    "mrr": null,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.0
   },
   {
    "id": "A04",
@@ -811,7 +836,8 @@
    "answer": null,
    "recall": {},
    "mrr": null,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.0
   },
   {
    "id": "A05",
@@ -951,7 +977,8 @@
    "answer": null,
    "recall": {},
    "mrr": null,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.0
   },
   {
    "id": "A06",
@@ -980,7 +1007,8 @@
    "answer": null,
    "recall": {},
    "mrr": null,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.0
   },
   {
    "id": "A07",
@@ -1015,7 +1043,8 @@
    "answer": null,
    "recall": {},
    "mrr": null,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.0
   },
   {
    "id": "U01",
@@ -1036,7 +1065,8 @@
    "answer": null,
    "recall": {},
    "mrr": null,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.0
   },
   {
    "id": "U02",
@@ -1057,7 +1087,8 @@
    "answer": null,
    "recall": {},
    "mrr": null,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.0
   },
   {
    "id": "U03",
@@ -1078,7 +1109,8 @@
    "answer": null,
    "recall": {},
    "mrr": null,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.0
   },
   {
    "id": "U04",
@@ -1099,7 +1131,8 @@
    "answer": null,
    "recall": {},
    "mrr": null,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.0
   },
   {
    "id": "U05",
@@ -1120,7 +1153,8 @@
    "answer": null,
    "recall": {},
    "mrr": null,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.0
   }
  ]
 }

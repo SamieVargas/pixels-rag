@@ -159,6 +159,7 @@ Offline, with the default local embedder (all-MiniLM-L6-v2), 2026-09-22:
 | Semantic recall@3 / @5 / @10 | 63% / 89% / 93% · MRR 0.71 |
 | Filter: matched set equals the expected set | 100% of 7 |
 | Route accuracy, facts in the answer, citation validity, abstention | keyed run below |
+| Cost per question · whole run | $0.0000 · $0.0000, offline: no model call |
 
 Three semantic questions carry the misses. S03 asks what recovery looked like
 the day after the trail run: the run day is found and the morning after is
@@ -179,6 +180,7 @@ Keyed, Haiku 4.5 under the native contract, the router deciding, 2026-09-22:
 | Semantic recall@3 / @5 / @10 | 70% / 74% / 79% · MRR 0.86 |
 | Validator retries · parse path | 10 across 26 · native on all 20 answers |
 | Mean tokens in / out · mean latency | 4,107 / 418 · 4.0 s |
+| Cost per question (mean) · whole run | $0.0062 · $0.1611 (26 questions, `claude-haiku-4-5-20251001` list prices read 2026-09-23) |
 
 The router chose the right kind every time, the seven aggregate questions
 all quoted their table, and every date in every answer was one the pipeline
@@ -203,6 +205,7 @@ gives the same recall):
 | Expected facts in the answer | 82% | 83% |
 | S06, the week question | 71% | 100% |
 | Week chunks retrieved, 140 runs | 0 | 280 |
+| Cost for the arm | not recorded before 2026-09-23 | not recorded before 2026-09-23 |
 
 The rollup lifts the week question and changes nothing else, and the one
 point of fact coverage between the arms is a tie. That is a narrower claim
@@ -219,6 +222,7 @@ python main.py --rebuild                             # your export, via .env
 python evals/run.py --offline                        # retrieval only, no key
 python evals/run.py                                  # the router and the answers, needs ANTHROPIC_API_KEY
 python evals/run.py --ablation                       # day vs day+week, 20 runs per arm
+python evals/tools/recost.py                        # re-price the results on disk from their recorded tokens
 python tests/test_core.py                            # everything, no key, no model download
 ```
 
@@ -328,8 +332,8 @@ the route and the plan equal the golden plan under each arm. Keyed,
 | H02 "Only in June?" | with history | filter | yes | Which days in June was my sleep score under 60? |
 | H02 | alone | unanswerable | no | |
 
-With the prior turn, both follow-ups come back as the full question and the
-plan matches the golden one. Alone, the first turns into a different
+Cost: not recorded before 2026-09-23. With the prior turn, both follow-ups
+come back as the full question and the plan matches the golden one. Alone, the first turns into a different
 question and the second has nothing to stand on, which is the case the
 history exists for.
 

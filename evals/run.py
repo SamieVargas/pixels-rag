@@ -8,7 +8,8 @@
 Per question: the route chosen versus the golden kind, recall@k of the
 expected dates in the retrieved set (k = 3, 5, 10), MRR, expected facts
 present in the answer, citation validity, abstention on unanswerable
-questions and on answerable ones, tokens and latency. Writes a markdown
+questions and on answerable ones, tokens, latency and cost in dollars (the
+recorded tokens at the list prices in core/contracts.py). Writes a markdown
 table and the raw records to evals/results/<date>[-offline][-ablation].md/json.
 
 Ctrl+C, or credit running out mid-run (the SDK raises, the shell sends the
@@ -28,7 +29,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from core import index as I  # noqa: E402
-from core.contracts import MODEL  # noqa: E402
+from core.contracts import MODEL, PRICES_READ_ON, cost_usd  # noqa: E402
 from core.embeddings import ARMS, DEFAULT as DEFAULT_ARM, run_arm  # noqa: E402
 from core.days import load_days, latest_date  # noqa: E402
 from core.pipeline import ask, gather  # noqa: E402
@@ -91,7 +92,7 @@ def run_question(g, *, days, collection, client, contract, top_k, offline, ks=KS
         rec = {"id": g["id"], "kind": g["kind"], "question": g["question"], "route": ev["route"], "route_ok": None,
                "retrieved": [c["id"] for c in ev["retrieved"]], "facts": None, "citations_valid": None,
                "abstained": None, "should_abstain": g["kind"] == "unanswerable", "retries": None, "parse_path": None,
-               "tokens": None, "latency_ms": int((time.time() - t0) * 1000), "hard_fail": False, "answer": None}
+               "tokens": None, "cost_usd": 0.0, "latency_ms": int((time.time() - t0) * 1000), "hard_fail": False, "answer": None}
         rec.update(score_retrieval(g["expected_dates"], ev["retrieved"], ks, kind=g["kind"]))
         rec["exact"] = exact_match(g["expected_dates"], ev["retrieved"], g["kind"])
         return rec
@@ -101,7 +102,7 @@ def run_question(g, *, days, collection, client, contract, top_k, offline, ks=KS
            "retrieved": [c["id"] for c in r["retrieved"]], "facts": facts_present(g["expected_facts"], r["answer"]["answer"]),
            "citations_valid": not invalid_citation, "abstained": bool(r["answer"]["unanswerable"]),
            "should_abstain": g["kind"] == "unanswerable", "retries": r["validation"]["retries"],
-           "parse_path": r["validation"]["parse_path"], "tokens": r["usage"], "latency_ms": r["latency_ms"],
+           "parse_path": r["validation"]["parse_path"], "tokens": r["usage"], "cost_usd": usage_cost(r["usage"]), "latency_ms": r["latency_ms"],
            "validation_ok": r["validation"]["ok"], "violations": r["validation"]["violations"],
            "hard_fail": invalid_citation, "answer": r["answer"]["answer"], "plan_notes": r["plan"]["notes"]}
     rec.update(score_retrieval(g["expected_dates"], r["retrieved"], ks, kind=g["kind"]))
@@ -112,6 +113,40 @@ def run_question(g, *, days, collection, client, contract, top_k, offline, ks=KS
 def _mean(vals):
     vals = [v for v in vals if v is not None]
     return round(sum(vals) / len(vals), 4) if vals else None
+
+
+def usage_cost(usage) -> float:
+    """Dollars for one question's recorded tokens (every call it made, retries included)."""
+    return round(cost_usd(MODEL, usage.get("input_tokens", 0), usage.get("output_tokens", 0)), 8) if usage else 0.0
+
+
+def cost_summary(records) -> dict:
+    """The cost block of the aggregate: mean per question and the whole run,
+    or $0 with the reason when no question made a model call (offline)."""
+    priced = [r for r in records if r.get("tokens")]
+    costs = [r.get("cost_usd") or 0.0 for r in records]
+    if not priced:
+        return {"per_question": 0.0, "total": 0.0, "priced": 0, "model": None, "prices_read_on": PRICES_READ_ON,
+                "note": "offline: no model call was made, so nothing was billed"}
+    return {"per_question": _mean(costs), "total": round(sum(costs), 4), "priced": len(priced), "model": MODEL,
+            "prices_read_on": PRICES_READ_ON, "note": None}
+
+
+def usd(x) -> str:
+    return "n/a" if x is None else f"${x:.4f}"
+
+
+def cost_rows(cost: dict) -> list[str]:
+    """The two cost rows of the summary table, shared with evals/tools/recost.py."""
+    if cost.get("note"):
+        return [f"| Cost per question (mean) | {usd(cost['per_question'])} ({cost['note']}) |",
+                f"| Cost for the whole run | {usd(cost['total'])} ({cost['note']}) |"]
+    return [f"| Cost per question (mean) | {usd(cost['per_question'])} |",
+            f"| Cost for the whole run | {usd(cost['total'])} ({cost['priced']} questions, `{cost['model']}` list prices read {cost['prices_read_on']}) |"]
+
+
+QUESTION_HEADER = "| Q | Kind | Route | R@3 | R@5 | R@10 | MRR | Facts | Cited ok | Abstained | Retries | ms | USD |"
+QUESTION_SEPARATOR = "|" + " --- |" * (QUESTION_HEADER.count("|") - 1)
 
 
 def aggregate_scores(records, ks=KS):
@@ -140,6 +175,7 @@ def aggregate_scores(records, ks=KS):
     toks = [r["tokens"] for r in records if r["tokens"]]
     agg["mean_tokens"] = {"input": _mean([t["input_tokens"] for t in toks]), "output": _mean([t["output_tokens"] for t in toks])} if toks else None
     agg["mean_latency_ms"] = _mean([r["latency_ms"] for r in records])
+    agg["cost"] = cost_summary(records)
     return agg
 
 
@@ -161,12 +197,13 @@ def render(records, agg, *, offline, contract, embedding, ks=KS, rerank=None):
     lines.append(f"| Abstained on unanswerable / on answerable | {a[0]}/{a[1]} · {b[0]}/{b[1]} |" if not offline else "| Abstention | n/a offline |")
     lines.append(f"| Validator retries · parse paths | {agg['retries']} · {agg['parse_paths'] or 'n/a'} |")
     lines.append(f"| Mean tokens in / out · mean latency | {agg['mean_tokens']['input'] if agg['mean_tokens'] else 'n/a'} / {agg['mean_tokens']['output'] if agg['mean_tokens'] else 'n/a'} · {agg['mean_latency_ms']} ms |")
-    lines += ["", "| Q | Kind | Route | R@3 | R@5 | R@10 | MRR | Facts | Cited ok | Abstained | Retries | ms |", "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
+    lines += cost_rows(agg["cost"])
+    lines += ["", QUESTION_HEADER, QUESTION_SEPARATOR]
     for r in records:
         rc = r["recall"]
         lines.append(f"| {r['id']} | {r['kind']} | {r['route']}{'' if r['route_ok'] in (None, True) else ' ✗'} | {pct(rc.get('3'))} | {pct(rc.get('5'))} | {pct(rc.get('10'))} | "
                      f"{r['mrr'] if r['mrr'] is not None else 'n/a'} | {pct(r['facts'])} | {'n/a' if r['citations_valid'] is None else ('✓' if r['citations_valid'] else '✗')} | "
-                     f"{'n/a' if r['abstained'] is None else ('✓' if r['abstained'] else '·')} | {r['retries'] if r['retries'] is not None else 'n/a'} | {r['latency_ms']} |")
+                     f"{'n/a' if r['abstained'] is None else ('✓' if r['abstained'] else '·')} | {r['retries'] if r['retries'] is not None else 'n/a'} | {r['latency_ms']} | {usd(r.get('cost_usd'))} |")
     return "\n".join(lines)
 
 
@@ -194,8 +231,9 @@ def run_ablation(golden, *, days, client, contract, top_k, offline, runs, embedd
     for arm in arms.values():
         rows = arm["rows"]
         arm.update({"recall5": _mean([r["recall5"] for r in rows]), "facts": _mean([r["facts"] for r in rows]),
-                    "week_chunks_retrieved": sum(r["weeks"] for r in rows)})
-    b = arms.get("B", {"recall5": None, "facts": None, "week_chunks_retrieved": 0, "rows": []})
+                    "week_chunks_retrieved": sum(r["weeks"] for r in rows), "cost_usd": round(sum(r.get("cost_usd") or 0.0 for r in rows), 4)})
+    b = arms.get("B", {"recall5": None, "facts": None, "week_chunks_retrieved": 0, "cost_usd": None, "rows": []})
+    cost_note = " (offline: no model call)" if offline else ""
     lines = [f"# Chunk granularity ablation · {date.today().isoformat()} · {len(sem)} semantic questions × {runs} run(s) per arm · embedding `{embedding}`" + (" · offline" if offline else f" · `{MODEL}`")
              + (f" · PARTIAL: {progress['completed']} of {progress['planned']} runs" if progress["partial"] else ""),
              "", "Arm A indexes one chunk per day. Arm B adds one deterministic rollup chunk per week, tagged `level: week`; a retrieved week counts as covering its seven days.", "",
@@ -203,6 +241,7 @@ def run_ablation(golden, *, days, client, contract, top_k, offline, runs, embedd
              f"| Recall@5 (expected days covered) | {pct(arms['A']['recall5'])} | {pct(b['recall5'])} |",
              f"| Expected facts in the answer | {pct(arms['A']['facts']) if not offline else 'n/a offline'} | {pct(b['facts']) if not offline else 'n/a offline'} |",
              f"| Week chunks retrieved (total) | {arms['A']['week_chunks_retrieved']} | {b['week_chunks_retrieved']} |",
+             f"| Cost for the arm, all runs | {usd(arms['A']['cost_usd'])}{cost_note} | {usd(b['cost_usd'])}{cost_note if b['cost_usd'] is not None else ''} |",
              "", "| Q | A recall@5 | B recall@5 |", "| --- | --- | --- |"]
     for g in sem:
         a = _mean([r["recall5"] for r in arms["A"]["rows"] if r["id"] == g["id"]])
@@ -216,12 +255,13 @@ def _ablation_question(g, *, arm, run, runs, rows, plan_today, days, coll, clien
     if offline:
         ev = gather(g["question"], plan, days=days, collection=coll, top_k=top_k)
         sc = score_retrieval(g["expected_dates"], ev["retrieved"])
-        rows.append({"id": g["id"], "run": run, "recall5": sc["recall"].get("5"), "facts": None, "weeks": sum(1 for c in ev["retrieved"] if c["id"].startswith("week:"))})
+        rows.append({"id": g["id"], "run": run, "recall5": sc["recall"].get("5"), "facts": None, "weeks": sum(1 for c in ev["retrieved"] if c["id"].startswith("week:")),
+                     "tokens": None, "cost_usd": 0.0})
     else:
         r = ask(g["question"], days=days, collection=coll, client=client, contract=contract, top_k=top_k, plan=g["plan"])
         sc = score_retrieval(g["expected_dates"], r["retrieved"])
         rows.append({"id": g["id"], "run": run, "recall5": sc["recall"].get("5"), "facts": facts_present(g["expected_facts"], r["answer"]["answer"]),
-                     "weeks": sum(1 for c in r["retrieved"] if c["id"].startswith("week:"))})
+                     "weeks": sum(1 for c in r["retrieved"] if c["id"].startswith("week:")), "tokens": r["usage"], "cost_usd": usage_cost(r["usage"])})
     print(f"  arm {arm} run {run}/{runs} {g['id']} recall@5={sc['recall'].get('5')}", flush=True)
 
 
@@ -295,14 +335,16 @@ def run_followups(golden_path, *, days, collection, client, contract, top_k):
             rows.append({"id": g["id"], "arm": label, "route": r["route"], "route_ok": r["route"] == g["kind"],
                          "plan_ok": plan_matches(r["plan"], g["plan"], today), "rewritten": r["plan"].get("query"),
                          "exact": exact_match(g["expected_dates"], r["retrieved"], g["kind"]) if g["kind"] == "filter" else None,
-                         "facts": facts_present(g["expected_facts"], r["answer"]["answer"]), "answer": r["answer"]["answer"][:160]})
+                         "facts": facts_present(g["expected_facts"], r["answer"]["answer"]), "answer": r["answer"]["answer"][:160],
+                         "tokens": r["usage"], "cost_usd": usage_cost(r["usage"])})
             print(f"  {g['id']} {label:12} route={r['route']:12} plan_ok={rows[-1]['plan_ok']} rewritten={rows[-1]['rewritten']!r}", flush=True)
     lines = [f"# Follow-ups · {date.today().isoformat()} · `{MODEL}` · contract `{contract}`", "",
              "Each follow-up asked with its prior turn in history (the router rewrites it) and alone (no history).", "",
-             "| Q | Arm | Route | Plan equals golden | Filter set exact | Facts | Rewritten as |", "| --- | --- | --- | --- | --- | --- | --- |"]
+             "| Q | Arm | Route | Plan equals golden | Filter set exact | Facts | Rewritten as | USD |", "| --- | --- | --- | --- | --- | --- | --- | --- |"]
     for r in rows:
         lines.append(f"| {r['id']} | {r['arm']} | {r['route']}{'' if r['route_ok'] else ' ✗'} | {'✓' if r['plan_ok'] else '✗'} | "
-                     f"{'n/a' if r['exact'] is None else ('✓' if r['exact'] else '✗')} | {pct(r['facts'])} | {r['rewritten'] or ''} |")
+                     f"{'n/a' if r['exact'] is None else ('✓' if r['exact'] else '✗')} | {pct(r['facts'])} | {r['rewritten'] or ''} | {usd(r['cost_usd'])} |")
+    lines += ["", f"Cost for the table: {usd(round(sum(r['cost_usd'] for r in rows), 4))} (`{MODEL}` list prices read {PRICES_READ_ON})."]
     return "\n".join(lines), rows
 
 
