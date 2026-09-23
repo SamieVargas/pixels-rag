@@ -1,0 +1,40 @@
+# The offline tests, on every push and pull request to main.
+#
+# No API key is set. The Anthropic client in every test is the scripted stub
+# in tests/stubs.py, and every index is built with the hash embedder in
+# core/index.py, so nothing calls the model and nothing downloads Chroma's
+# default ONNX embedding model (all-MiniLM-L6-v2, a network fetch on first
+# use). Checked locally on 2026-09-23: after the whole suite, ~/.cache/chroma
+# does not exist. The last step keeps that true: if it ever fails, a test has
+# started pulling the model and needs either an actions/cache step on
+# ~/.cache/chroma keyed on the chromadb version, or a pytest marker excluded
+# here with the reason written down. Never skip the test instead.
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  # Chroma posts anonymous usage to a third party on client creation; the
+  # tests need no network beyond the package installs, so it is off.
+  ANONYMIZED_TELEMETRY: "False"
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          # The version the repo is developed and run on (3.11.15 locally).
+          python-version: "3.11"
+          cache: pip
+      - name: Install
+        run: pip install -r requirements.txt -r requirements-dev.txt
+      - name: Test
+        run: python -m pytest -q tests/
+      - name: No embedding model was downloaded
+        run: test ! -e ~/.cache/chroma

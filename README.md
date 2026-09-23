@@ -1,5 +1,7 @@
 # Behavioral Data RAG
 
+[![tests](https://github.com/SamieVargas/pixels-rag/actions/workflows/tests.yml/badge.svg)](https://github.com/SamieVargas/pixels-rag/actions/workflows/tests.yml)
+
 A RAG pipeline for asking natural language questions over structured
 daily behavioral and biometric data — questions a spreadsheet can't answer.
 
@@ -223,7 +225,7 @@ python evals/run.py --offline                        # retrieval only, no key
 python evals/run.py                                  # the router and the answers, needs ANTHROPIC_API_KEY
 python evals/run.py --ablation                       # day vs day+week, 20 runs per arm
 python evals/tools/recost.py                        # re-price the results on disk from their recorded tokens
-python tests/test_core.py                            # everything, no key, no model download
+python -m pytest -q tests/                          # every offline test, no key, no model download (pip install -r requirements-dev.txt first)
 ```
 
 ### An index that stays current

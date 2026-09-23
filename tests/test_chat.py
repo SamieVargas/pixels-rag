@@ -91,5 +91,11 @@ def main():
     print("ALL CHECKS PASSED")
 
 
+def test_all():
+    """pytest entry point: the checks above, one test per file. A failing
+    check makes main() exit 1, which pytest reports as this test failing."""
+    main()
+
+
 if __name__ == "__main__":
     main()
