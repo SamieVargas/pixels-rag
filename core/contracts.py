@@ -57,6 +57,25 @@ BOOLEAN_FIELDS = tuple(k for k, (t, _) in FIELDS.items() if t == "boolean")
 # What is never logged, so the router can say so instead of retrieving.
 NOT_LOGGED = "blood pressure, weight, meals or food eaten, meetings, who was spoken to, locations, spending amounts, medication doses"
 
+# List prices in USD per million tokens, read from https://www.anthropic.com/pricing
+# on PRICES_READ_ON. They are the one thing in this file that can go stale
+# without a code change: re-check them against that page before quoting any
+# dollar figure computed from them. Batch pricing (half of these) is not used
+# anywhere in the pipeline, so it is not recorded here.
+PRICES_READ_ON = "2026-09-23"
+PRICES = {
+    "claude-haiku-4-5-20251001": {"input": 1.00, "output": 5.00},
+}
+
+
+def cost_usd(model: str, input_tokens: int, output_tokens: int) -> float:
+    """Dollars for the given token counts at the model's list price. A model
+    with no row in PRICES raises rather than pricing it at zero."""
+    if model not in PRICES:
+        raise KeyError(f"no price recorded for {model!r}; add it to PRICES in core/contracts.py")
+    p = PRICES[model]
+    return (input_tokens or 0) * p["input"] / 1_000_000 + (output_tokens or 0) * p["output"] / 1_000_000
+
 
 def field_lines():
     return "\n".join(f"- {name} ({typ}): {desc}" for name, (typ, desc) in FIELDS.items())

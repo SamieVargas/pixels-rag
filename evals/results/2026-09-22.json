@@ -47,7 +47,15 @@
    "input": 4107.4615,
    "output": 417.7308
   },
-  "mean_latency_ms": 4036.4231
+  "mean_latency_ms": 4036.4231,
+  "cost": {
+   "per_question": 0.0062,
+   "total": 0.1611,
+   "priced": 26,
+   "model": "claude-haiku-4-5-20251001",
+   "prices_read_on": "2026-09-23",
+   "note": null
+  }
  },
  "records": [
   {
@@ -83,7 +91,8 @@
     "10": 1.0
    },
    "mrr": 1.0,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.008802
   },
   {
    "id": "S02",
@@ -116,7 +125,8 @@
     "10": 1.0
    },
    "mrr": 1.0,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.008144
   },
   {
    "id": "S03",
@@ -151,7 +161,8 @@
     "10": 0.5
    },
    "mrr": 1.0,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.005998
   },
   {
    "id": "S04",
@@ -184,7 +195,8 @@
     "10": 1.0
    },
    "mrr": 1.0,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.00767
   },
   {
    "id": "S05",
@@ -217,7 +229,8 @@
     "10": 1.0
    },
    "mrr": 1.0,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.007785
   },
   {
    "id": "S06",
@@ -256,7 +269,8 @@
     "10": 1.0
    },
    "mrr": 1.0,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.013561
   },
   {
    "id": "S07",
@@ -287,7 +301,8 @@
     "10": 0.0
    },
    "mrr": 0.0,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.002663
   },
   {
    "id": "F01",
@@ -363,7 +378,8 @@
     "10": 0.2273
    },
    "mrr": 1.0,
-   "exact": true
+   "exact": true,
+   "cost_usd": 0.02419
   },
   {
    "id": "F02",
@@ -403,7 +419,8 @@
     "10": 1.0
    },
    "mrr": 1.0,
-   "exact": true
+   "exact": true,
+   "cost_usd": 0.006059
   },
   {
    "id": "F03",
@@ -439,7 +456,8 @@
     "10": 1.0
    },
    "mrr": 1.0,
-   "exact": true
+   "exact": true,
+   "cost_usd": 0.005281
   },
   {
    "id": "F04",
@@ -493,7 +511,8 @@
     "10": 0.4545
    },
    "mrr": 1.0,
-   "exact": true
+   "exact": true,
+   "cost_usd": 0.01049
   },
   {
    "id": "F05",
@@ -526,7 +545,8 @@
     "10": 1.0
    },
    "mrr": 1.0,
-   "exact": true
+   "exact": true,
+   "cost_usd": 0.003882
   },
   {
    "id": "F06",
@@ -566,7 +586,8 @@
     "10": 1.0
    },
    "mrr": 1.0,
-   "exact": true
+   "exact": true,
+   "cost_usd": 0.007021
   },
   {
    "id": "F07",
@@ -600,7 +621,8 @@
     "10": 1.0
    },
    "mrr": 1.0,
-   "exact": true
+   "exact": true,
+   "cost_usd": 0.004631
   },
   {
    "id": "A01",
@@ -656,7 +678,8 @@
    "plan_notes": [],
    "recall": {},
    "mrr": null,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.00534
   },
   {
    "id": "A02",
@@ -802,7 +825,8 @@
    "plan_notes": [],
    "recall": {},
    "mrr": null,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.005747
   },
   {
    "id": "A03",
@@ -843,7 +867,8 @@
    "plan_notes": [],
    "recall": {},
    "mrr": null,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.003937
   },
   {
    "id": "A04",
@@ -901,7 +926,8 @@
    "plan_notes": [],
    "recall": {},
    "mrr": null,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.003872
   },
   {
    "id": "A05",
@@ -1047,7 +1073,8 @@
    "plan_notes": [],
    "recall": {},
    "mrr": null,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.003984
   },
   {
    "id": "A06",
@@ -1082,7 +1109,8 @@
    "plan_notes": [],
    "recall": {},
    "mrr": null,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.005304
   },
   {
    "id": "A07",
@@ -1123,7 +1151,8 @@
    "plan_notes": [],
    "recall": {},
    "mrr": null,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.003865
   },
   {
    "id": "U01",
@@ -1150,7 +1179,8 @@
    "plan_notes": [],
    "recall": {},
    "mrr": null,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.002565
   },
   {
    "id": "U02",
@@ -1177,7 +1207,8 @@
    "plan_notes": [],
    "recall": {},
    "mrr": null,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.002598
   },
   {
    "id": "U03",
@@ -1204,7 +1235,8 @@
    "plan_notes": [],
    "recall": {},
    "mrr": null,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.002576
   },
   {
    "id": "U04",
@@ -1231,7 +1263,8 @@
    "plan_notes": [],
    "recall": {},
    "mrr": null,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.002567
   },
   {
    "id": "U05",
@@ -1258,7 +1291,8 @@
    "plan_notes": [],
    "recall": {},
    "mrr": null,
-   "exact": null
+   "exact": null,
+   "cost_usd": 0.002567
   }
  ]
 }
